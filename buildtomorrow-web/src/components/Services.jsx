@@ -229,7 +229,7 @@ export default function Services() {
     ScrollTrigger.create({
       trigger: section,
       start: 'top top',
-      end: `+=${n * 300}vh`,
+      end: `+=${n * 500}vh`,
       pin: true,
       pinSpacing: true,
       scrub: 1.2,

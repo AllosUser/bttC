@@ -128,7 +128,7 @@ export default function Process() {
   }, [isMobile], sectionRef)
 
   return (
-    <section ref={sectionRef} className="process-section" aria-label="Our process">
+    <section id="work" ref={sectionRef} className="process-section" aria-label="Our process">
       <div className="process-inner">
         <header className="process-header">
           <span className="section-label">How We Build</span>

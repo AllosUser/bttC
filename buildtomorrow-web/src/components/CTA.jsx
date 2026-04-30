@@ -32,7 +32,7 @@ export default function CTA() {
     const mobile = window.innerWidth < 768
     let cleanup = null
     const trigger = ScrollTrigger.create({
-      trigger: el, start: 'top 75%', once: true,
+      trigger: el, start: 'top 85%', once: true,
       onEnter: () => { cleanup = scrambleText(el, HEADLINE_TEXT, mobile) },
     })
     return () => { cleanup?.(); trigger.kill() }
@@ -52,13 +52,17 @@ export default function CTA() {
     const meta  = section.querySelector('.cta-meta')
 
     const elements = [label, sub, form, meta].filter(Boolean)
-    elements.forEach((el, i) => {
-      gsap.fromTo(el,
-        { opacity: 0, y: 28 },
-        { opacity: 1, y: 0, duration: 0.7, ease: EASE,
-          scrollTrigger: { trigger: el, start: 'top 92%', once: true },
-          delay: i * 0.05 }
-      )
+    
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 85%',
+      once: true,
+      onEnter: () => {
+        gsap.fromTo(elements,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8, ease: EASE, stagger: 0.12 }
+        )
+      }
     })
   }, [reduced], sectionRef)
 
