@@ -45,7 +45,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
+  overscroll-behavior: none;
 }
+
+/* Restore system cursor on touch/coarse-pointer devices */
+html.touch-device body,
+@media (hover: none) and (pointer: coarse) {
+  cursor: auto;
+}
+html.touch-device #cursor-dot,
+html.touch-device #cursor-ring { display: none !important; }
 
 a, button, input, textarea, select {
   cursor: none;

@@ -11,6 +11,8 @@ const Services   = lazy(() => import('./components/Services'))
 const About      = lazy(() => import('./components/About'))
 const Process    = lazy(() => import('./components/Process'))
 const VideoStrip = lazy(() => import('./components/VideoStrip'))
+const LimeMarquee = lazy(() => import('./components/LimeMarquee'))
+
 const CTA        = lazy(() => import('./components/CTA'))
 const Footer     = lazy(() => import('./components/Footer'))
 
@@ -34,6 +36,8 @@ export default function App() {
             <About />
             <Process />
             <VideoStrip />
+            <LimeMarquee />
+
             <CTA />
           </Suspense>
         </main>

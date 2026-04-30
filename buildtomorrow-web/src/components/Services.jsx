@@ -1,292 +1,420 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useGSAP } from '../hooks/useGSAP'
 
+/* ---------- Icons ---------- */
+const ICON_WEB = (
+  <svg className="svc-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+    <rect x="3" y="7" width="38" height="26" rx="2" stroke="#c8f542" strokeWidth="1.4" />
+    <path d="M3 29h38v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3z" fill="#c8f542" fillOpacity=".15" />
+    <path d="M14 21l-5 3 5 3M30 21l5 3-5 3M20 27l4-10" stroke="#c8f542" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+)
+const ICON_MOBILE = (
+  <svg className="svc-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+    <rect x="12" y="3" width="20" height="38" rx="3" stroke="#42f5b0" strokeWidth="1.4" />
+    <circle cx="22" cy="37" r="2" fill="#42f5b0" fillOpacity=".4" />
+    <path d="M18 12h8M16 17h12M18 22h8" stroke="#42f5b0" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+)
+const ICON_CYBER = (
+  <svg className="svc-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+    <path d="M22 4L7 9.5v11C7 29 13.5 37 22 40c8.5-3 15-11 15-19.5v-11L22 4z" stroke="#c8f542" strokeWidth="1.4" />
+    <path d="M15 22l4 4 10-10" stroke="#c8f542" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+)
+const ICON_SYSTEMS = (
+  <svg className="svc-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+    <circle cx="22" cy="22" r="6" stroke="#42f5b0" strokeWidth="1.4" />
+    <path d="M22 7v4M22 33v4M7 22h4M33 22h4M12.1 12.1l2.8 2.8M29.1 29.1l2.8 2.8M31.9 12.1l-2.8 2.8M14.9 29.1l-2.8 2.8" stroke="#42f5b0" strokeWidth="1.4" strokeLinecap="round" />
+  </svg>
+)
+
 const SERVICES = [
-  {
-    id: '01',
-    title: 'Web Development',
-    subtitle: 'Digital Experiences',
-    desc: 'High-performance websites and web applications, precision-engineered to convert visitors and scale with your ambitions.',
-    tags: ['React', 'Next.js', 'Node.js', 'PostgreSQL'],
-    color: '#0f0f12',
-  },
-  {
-    id: '02',
-    title: 'Mobile Applications',
-    subtitle: 'iOS & Android',
-    desc: 'Native and cross-platform mobile apps with intuitive interfaces backed by robust, scalable backend infrastructure.',
-    tags: ['React Native', 'Expo', 'Swift', 'Kotlin'],
-    color: '#0d0f0d',
-  },
-  {
-    id: '03',
-    title: 'Cybersecurity',
-    subtitle: 'Protection & Compliance',
-    desc: 'End-to-end security audits, penetration testing, and hardening strategies to protect your assets and your customers.',
-    tags: ['Pen Testing', 'SIEM', 'ISO 27001', 'Zero Trust'],
-    color: '#0a0c0f',
-  },
-  {
-    id: '04',
-    title: 'Systems Development',
-    subtitle: 'Enterprise Architecture',
-    desc: 'Complex backend systems, APIs, and enterprise software built with modern architecture that performs under real pressure.',
-    tags: ['Microservices', 'GraphQL', 'Kubernetes', 'AWS'],
-    color: '#0d0d0f',
-  },
+  { id: '01', tag: 'Full Stack', titleLines: ['Web', 'Development'],
+    desc: 'Performant, scalable digital products built with obsessive attention to craft. From architecture to the last pixel. We engineer every layer — front-end, back-end, and everything in between.',
+    keywords: ['React', 'Next.js', 'Node.js', 'PostgreSQL', 'REST & GraphQL', 'CI/CD', 'Cloud Deploy'],
+    color: '#09090c', accent: '#c8f542', icon: ICON_WEB },
+  { id: '02', tag: 'iOS & Android', titleLines: ['Mobile', 'Apps'],
+    desc: 'Native iOS, Android and cross-platform apps that feel inevitable. Precision UX from day one. Smooth animations, offline-first architecture, and seamless App Store delivery.',
+    keywords: ['Swift', 'Kotlin', 'React Native', 'Flutter', 'Push Notifications', 'In-App Payments'],
+    color: '#080b0a', accent: '#42f5b0', icon: ICON_MOBILE },
+  { id: '03', tag: 'Protection & Compliance', titleLines: ['Cyber', 'Security'],
+    desc: 'Enterprise-grade protection for modern threats. Penetration testing, security audits, threat modeling, and hardened infrastructure — so you can scale with confidence.',
+    keywords: ['Pen Testing', 'OWASP', 'SOC 2', 'Zero Trust', 'Encryption', 'Incident Response'],
+    color: '#08090b', accent: '#c8f542', icon: ICON_CYBER },
+  { id: '04', tag: 'Enterprise Grade', titleLines: ['Systems', 'Dev'],
+    desc: 'Low-level systems, APIs, and infrastructure built for infinite scale. High-throughput pipelines, distributed architectures, and zero-downtime deployments. No compromises.',
+    keywords: ['Microservices', 'Docker', 'Kubernetes', 'gRPC', 'Event-Driven', 'Load Balancing'],
+    color: '#08080e', accent: '#42f5b0', icon: ICON_SYSTEMS },
 ]
 
-function ServicePanel({ service, idx }) {
+function ServicePanel({ service, mobile, total }) {
   return (
     <article
-      className="service-panel"
+      className={`svc-panel ${mobile ? 'svc-panel--mobile' : ''}`}
       style={{ background: service.color }}
-      data-idx={idx}
     >
-      <div className="service-panel__inner">
-        <span className="panel-num" aria-hidden="true">{service.id}</span>
-
-        <div className="service-panel__body">
-          <span className="service-panel__subtitle">{service.subtitle}</span>
-          <h3 className="panel-title">{service.title}</h3>
-          <p className="panel-desc">{service.desc}</p>
-
-          <ul className="service-panel__tags">
-            {service.tags.map(t => (
-              <li key={t} className="service-panel__tag">{t}</li>
-            ))}
-          </ul>
+      <span className="svc-num" aria-hidden="true">{service.id}</span>
+      {mobile && (
+        <div className="svc-counter" aria-label={`Service ${service.id} of ${String(total).padStart(2,'0')}`}>
+          <span style={{ color: service.accent }}>{service.id}</span>
+          <span style={{ color: 'var(--muted)' }}> / {String(total).padStart(2,'0')}</span>
         </div>
-
-        <div className="service-panel__progress" data-progress={idx} />
-      </div>
+      )}
+      <span className="svc-tag" style={{ color: service.accent, borderColor: `${service.accent}48` }}>{service.tag}</span>
+      {service.icon}
+      <h2 className="svc-h" style={{ color: service.accent }}>
+        {service.titleLines.map((line, i) => (
+          <span key={i} className="svc-title-mask">
+            <span className="svc-title-word">{line}</span>
+          </span>
+        ))}
+      </h2>
+      <p className="svc-p">{service.desc}</p>
+      {service.keywords && (
+        <div className="svc-keywords">
+          {service.keywords.map((kw, i) => (
+            <span key={i} className="svc-kw" style={{ borderColor: `${service.accent}30`, color: `${service.accent}cc` }}>{kw}</span>
+          ))}
+        </div>
+      )}
     </article>
   )
 }
 
-export default function Services() {
-  const sectionRef = useRef(null)
-  const trackRef = useRef(null)
-  const progressRef = useRef(null)
+/* ---------- Mobile counter badge (01 / 04) ---------- */
+function MobileCounter({ active, total }) {
+  return (
+    <div className="svc-mob-counter" aria-live="polite">
+      <span style={{ color: 'var(--accent)' }}>{String(active).padStart(2,'0')}</span>
+      <span style={{ color: 'var(--muted)' }}> / {String(total).padStart(2,'0')}</span>
+    </div>
+  )
+}
 
+export default function Services() {
+  const sectionRef  = useRef(null)
+  const trackRef    = useRef(null)
+  const progressRef = useRef(null)
+  const [activePanel, setActivePanel] = useState(1)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024)
+    check()
+    window.addEventListener('resize', check, { passive: true })
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  /* ── Desktop: GSAP horizontal scroll ── */
   useGSAP(({ gsap, ScrollTrigger }) => {
-    const track = trackRef.current
-    const section = sectionRef.current
+    const track    = trackRef.current
+    const section  = sectionRef.current
+    const progress = progressRef.current
     if (!track || !section) return
 
-    const panels = gsap.utils.toArray('.service-panel', track)
-    const totalWidth = (panels.length - 1) * window.innerWidth
+    const desktop = window.innerWidth >= 1024
+    if (!desktop) return
+
+    const panels = gsap.utils.toArray('.svc-panel', track)
+    const n = panels.length
+    const EASE = 'expo.out', DUR = 0.75
+
+    panels.forEach(panel => {
+      gsap.set(panel.querySelector('.svc-tag'),          { opacity: 0, y: 20 })
+      gsap.set(panel.querySelector('.svc-icon'),         { opacity: 0, scale: 0.6, y: 10 })
+      gsap.set(panel.querySelectorAll('.svc-title-word'),{ yPercent: 100 })
+      gsap.set(panel.querySelector('.svc-p'),            { opacity: 0, y: 24 })
+    })
 
     const scrollTween = gsap.to(track, {
-      x: -totalWidth,
+      x: () => -(window.innerWidth * (n - 1)),
       ease: 'none',
       scrollTrigger: {
         trigger: section,
         start: 'top top',
-        end: () => `+=${(panels.length - 1) * window.innerWidth}`,
+        end: () => `+=${window.innerWidth * (n - 1)}`,
         pin: true,
         scrub: 1.2,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        onUpdate(self) {
+          if (progress) progress.style.width = `${self.progress * 100}%`
+        },
       },
     })
 
-    // Progress bar
-    if (progressRef.current) {
-      gsap.to(progressRef.current, {
-        scaleX: 1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: () => `+=${(panels.length - 1) * window.innerWidth}`,
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      })
+    const buildReveal = (panel, tl) => {
+      tl.to(panel.querySelector('.svc-tag'),           { opacity:1, y:0, duration:DUR, ease:EASE }, 0)
+        .to(panel.querySelector('.svc-icon'),          { opacity:1, scale:1, y:0, duration:DUR, ease:EASE }, 0.1)
+        .to(panel.querySelectorAll('.svc-title-word'), { yPercent:0, duration:DUR, ease:EASE, stagger:0.08 }, 0.1)
+        .to(panel.querySelector('.svc-p'),             { opacity:1, y:0, duration:DUR, ease:EASE }, 0.45)
     }
 
-    // Per-panel content animation, tied to the horizontal scrollTween
-    panels.forEach(panel => {
-      const num = panel.querySelector('.panel-num')
-      const subtitle = panel.querySelector('.service-panel__subtitle')
-      const title = panel.querySelector('.panel-title')
-      const desc = panel.querySelector('.panel-desc')
-      const tags = panel.querySelectorAll('.service-panel__tag')
-      const progress = panel.querySelector('.service-panel__progress')
+    buildReveal(panels[0], gsap.timeline({ delay: 0.5 }))
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: panel,
-          containerAnimation: scrollTween,
-          start: 'left center',
-          end: 'right center',
-          scrub: true,
-        },
+    panels.slice(1).forEach(panel => {
+      buildReveal(panel, gsap.timeline({
+        scrollTrigger: { trigger: panel, containerAnimation: scrollTween, start: 'left right', toggleActions: 'play none none none', invalidateOnRefresh: true },
+      }))
+    })
+  }, [isMobile], sectionRef)
+
+  /* ── Mobile: Pinned section, cards swap in-place on scroll ── */
+  useGSAP(({ gsap, ScrollTrigger }) => {
+    if (window.innerWidth >= 1024) return
+    const section = sectionRef.current
+    if (!section) return
+
+    const cards = gsap.utils.toArray('.svc-panel--mobile', section)
+    const n = cards.length
+    if (!n) return
+    const EASE = 'expo.out'
+
+    // Stack all cards on top of each other via absolute positioning
+    // First card visible, rest hidden
+    cards.forEach((card, i) => {
+      gsap.set(card, {
+        position: 'absolute',
+        top: 0, left: 0, width: '100%',
+        opacity: i === 0 ? 1 : 0,
+        y: i === 0 ? 0 : 40,
       })
 
-      tl.from(num,      { opacity: 0, y: 60, duration: 0.3 })
-        .from(subtitle, { opacity: 0, y: 20, duration: 0.25 }, '-=0.15')
-        .from(title,    { opacity: 0, y: 40, duration: 0.3 }, '-=0.1')
-        .from(desc,     { opacity: 0, y: 30, duration: 0.3 }, '-=0.1')
-        .from(tags,     { opacity: 0, y: 20, stagger: 0.05, duration: 0.25 }, '-=0.1')
+      const counter = card.querySelector('.svc-counter')
+      const tag = card.querySelector('.svc-tag')
+      const icon = card.querySelector('.svc-icon')
+      const titleWords = card.querySelectorAll('.svc-title-word')
+      const desc = card.querySelector('.svc-p')
+      const keywords = card.querySelector('.svc-keywords')
 
-      if (progress) {
-        gsap.fromTo(
-          progress,
-          { scaleX: 0 },
-          {
-            scaleX: 1,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: panel,
-              containerAnimation: scrollTween,
-              start: 'left center',
-              end: 'right center',
-              scrub: true,
-            },
-          }
-        )
-      }
+      if (counter) gsap.set(counter, { opacity: 0, y: 10 })
+      if (tag) gsap.set(tag, { opacity: 0, y: 16 })
+      if (icon) gsap.set(icon, { opacity: 0, scale: 0.5, y: 10 })
+      if (titleWords.length) gsap.set(titleWords, { yPercent: 100 })
+      if (desc) gsap.set(desc, { opacity: 0, y: 20 })
+      if (keywords) gsap.set(keywords, { opacity: 0, y: 14 })
     })
-  }, [], sectionRef)
+
+    const revealCard = (card) => {
+      const counter = card.querySelector('.svc-counter')
+      const tag = card.querySelector('.svc-tag')
+      const icon = card.querySelector('.svc-icon')
+      const titleWords = card.querySelectorAll('.svc-title-word')
+      const desc = card.querySelector('.svc-p')
+      const keywords = card.querySelector('.svc-keywords')
+      const tl = gsap.timeline()
+      tl.to(card, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0)
+      if (counter) tl.to(counter, { opacity: 1, y: 0, duration: 0.4, ease: EASE }, 0)
+      if (tag) tl.to(tag, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.05)
+      if (icon) tl.to(icon, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: EASE }, 0.1)
+      if (titleWords.length) tl.to(titleWords, { yPercent: 0, duration: 0.6, ease: EASE, stagger: 0.06 }, 0.1)
+      if (desc) tl.to(desc, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.3)
+      if (keywords) tl.to(keywords, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.4)
+      return tl
+    }
+
+    const hideCard = (card) => {
+      const tl = gsap.timeline()
+      tl.to(card, { opacity: 0, y: -30, duration: 0.35, ease: 'power2.in' })
+      return tl
+    }
+
+    let currentIdx = 0
+
+    /*
+     * Pin the section. Scroll distance = n panels × 80vh.
+     * As user scrolls, cross-fade between cards.
+     */
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: `+=${n * 80}vh`,
+      pin: true,
+      pinSpacing: true,
+      scrub: 0.5,
+      invalidateOnRefresh: true,
+      onEnter() {
+        // Reveal first card when section enters
+        revealCard(cards[0])
+        setActivePanel(1)
+      },
+      onUpdate(self) {
+        const p = self.progress
+        const targetIdx = Math.min(Math.floor(p * n * 1.02), n - 1)
+
+        if (targetIdx !== currentIdx) {
+          // Hide current card
+          hideCard(cards[currentIdx])
+          // Reset inner elements of new card
+          const newCard = cards[targetIdx]
+          gsap.set(newCard, { opacity: 0, y: 40 })
+          const counter = newCard.querySelector('.svc-counter')
+          const tag = newCard.querySelector('.svc-tag')
+          const icon = newCard.querySelector('.svc-icon')
+          const titleWords = newCard.querySelectorAll('.svc-title-word')
+          const desc = newCard.querySelector('.svc-p')
+          const keywords = newCard.querySelector('.svc-keywords')
+          if (counter) gsap.set(counter, { opacity: 0, y: 10 })
+          if (tag) gsap.set(tag, { opacity: 0, y: 16 })
+          if (icon) gsap.set(icon, { opacity: 0, scale: 0.5, y: 10 })
+          if (titleWords.length) gsap.set(titleWords, { yPercent: 100 })
+          if (desc) gsap.set(desc, { opacity: 0, y: 20 })
+          if (keywords) gsap.set(keywords, { opacity: 0, y: 14 })
+
+          // Reveal new card
+          revealCard(newCard)
+          currentIdx = targetIdx
+          setActivePanel(targetIdx + 1)
+        }
+      },
+    })
+  }, [isMobile], sectionRef)
 
   return (
-    <section
-      id="services"
-      ref={sectionRef}
-      className="services-outer"
-      aria-label="Our services"
-    >
-      <div ref={progressRef} className="services-progress" />
+    <section id="services" ref={sectionRef} className="svc-section" aria-label="Our services">
 
-      <div className="services-sticky">
-        <div ref={trackRef} className="services-track">
-          {SERVICES.map((s, i) => (
-            <ServicePanel key={s.id} service={s} idx={i} />
+      {/* Desktop progress bar */}
+      {!isMobile && <div ref={progressRef} className="svc-progress" />}
+
+      <div className="svc-sticky">
+        <div ref={trackRef} className="svc-track">
+          {SERVICES.map(s => (
+            <ServicePanel key={s.id} service={s} mobile={isMobile} total={SERVICES.length} />
           ))}
         </div>
       </div>
 
       <style>{`
-        .services-outer {
-          position: relative;
-          width: 100vw;
-          background: var(--black);
+        .svc-section { position: relative; width: 100vw; background: var(--black); }
+
+        /* ── Desktop progress ── */
+        .svc-progress {
+          position: absolute; top: 0; left: 0;
+          height: 2px; width: 0%; background: #c8f542; z-index: 100; pointer-events: none;
         }
-        .services-progress {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background: var(--accent);
-          transform: scaleX(0);
-          transform-origin: left center;
-          z-index: 200;
-          pointer-events: none;
+
+        /* ── Mobile counter (inline in card) ── */
+        .svc-counter {
+          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.75rem;
+          letter-spacing: 0.2em; text-transform: uppercase;
+          margin-bottom: 1.25rem;
+          align-self: flex-end;
         }
-        .services-sticky {
-          position: relative;
-          height: 100vh;
-          overflow: hidden;
-        }
-        .services-track {
-          display: flex;
-          flex-wrap: nowrap;
-          height: 100%;
-          will-change: transform;
-        }
-        .service-panel {
-          position: relative;
-          flex: 0 0 100vw;
-          width: 100vw;
-          height: 100vh;
-        }
-        .service-panel + .service-panel {
-          border-left: 1px solid var(--dim);
-        }
-        .service-panel__inner {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          padding: clamp(4rem, 10vh, 8rem) clamp(2rem, 6vw, 6rem);
-          display: flex;
-          align-items: flex-end;
-          overflow: hidden;
-        }
-        .panel-num {
-          position: absolute;
-          right: clamp(2rem, 6vw, 6rem);
-          top: clamp(3rem, 8vh, 6rem);
-          font-family: var(--font-display);
-          font-weight: 800;
-          font-size: clamp(12rem, 20vw, 18rem);
-          line-height: 0.8;
-          -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
-          color: transparent;
-          pointer-events: none;
-          user-select: none;
-        }
-        .service-panel__body {
-          position: relative;
-          z-index: 2;
-          max-width: 720px;
+        @media (min-width: 1024px) { .svc-counter { display: none; } }
+
+        /* ── Mobile: stacked container ── */
+        .svc-sticky { position: relative; }
+        .svc-track {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          width: 100%;
         }
-        .service-panel__subtitle {
-          font-family: var(--font-display);
-          font-weight: 400;
-          font-size: 0.8rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: var(--accent);
+        @media (max-width: 1023px) {
+          .svc-section {
+            height: 100vh;
+            overflow: hidden;
+          }
+          .svc-sticky {
+            height: 100vh;
+            position: relative;
+          }
+          .svc-track {
+            position: relative;
+            height: 100%;
+          }
         }
-        .panel-title {
-          font-family: var(--font-display);
-          font-weight: 800;
-          font-size: clamp(3rem, 6vw, 5.5rem);
-          line-height: 1;
-          letter-spacing: -0.02em;
-          color: var(--white);
+        @media (min-width: 1024px) {
+          .svc-sticky { height: 100vh; overflow: hidden; }
+          .svc-track  { flex-direction: row; flex-wrap: nowrap; height: 100%; will-change: transform; }
         }
-        .panel-desc {
-          font-family: var(--font-body);
-          font-weight: 300;
-          font-size: 1rem;
-          line-height: 1.6;
-          color: var(--muted);
-          max-width: 480px;
-        }
-        .service-panel__tags {
+
+        /* ── Panel base ── */
+        .svc-panel {
           display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-          margin-top: 0.75rem;
-          list-style: none;
+          flex-direction: column;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
         }
-        .service-panel__tag {
-          border: 1px solid var(--dim);
-          padding: 0.4rem 0.9rem;
-          font-family: var(--font-body);
-          font-weight: 400;
-          font-size: 0.7rem;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--muted);
+
+        /* Mobile panel — stacked absolutely, centered */
+        .svc-panel--mobile {
+          padding: 2rem 1.25rem;
+          width: 100%;
+          height: 100vh;
+          box-sizing: border-box;
+          justify-content: center;
         }
-        .service-panel__progress {
+
+        /* Desktop panel */
+        @media (min-width: 1024px) {
+          .svc-panel {
+            flex: 0 0 100vw;
+            width: 100vw;
+            height: 100%;
+            padding: 0 10vw;
+          }
+        }
+
+        /* ── Ghost number ── */
+        .svc-num {
           position: absolute;
-          left: clamp(2rem, 6vw, 6rem);
-          right: clamp(2rem, 6vw, 6rem);
-          bottom: 3rem;
-          height: 1px;
-          background: var(--accent);
-          transform: scaleX(0);
-          transform-origin: left center;
-          opacity: 0.7;
+          font-family: 'Syne', sans-serif; font-weight: 800;
+          color: transparent; -webkit-text-stroke: 1px rgba(240,237,232,0.05);
+          pointer-events: none; user-select: none; line-height: 1;
+          font-size: clamp(5rem, 20vw, 8rem);
+          right: 1rem; top: 1rem; opacity: 0.6;
+        }
+        @media (min-width: 1024px) {
+          .svc-num {
+            font-size: clamp(160px, 24vw, 320px);
+            right: 4vw; top: 50%; transform: translateY(-50%); opacity: 1;
+          }
+        }
+
+        /* ── Badge ── */
+        .svc-tag {
+          display: inline-block; align-self: flex-start;
+          font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+          border: 1px solid; padding: 6px 14px; border-radius: 1px;
+          margin-bottom: 20px; min-height: 32px;
+        }
+        @media (min-width: 1024px) { .svc-tag { margin-bottom: 28px; } }
+
+        /* ── Icon ── */
+        .svc-icon { width: 40px; height: 40px; margin-bottom: 24px; flex-shrink: 0; }
+        @media (min-width: 1024px) { .svc-icon { width: 44px; height: 44px; margin-bottom: 32px; } }
+
+        /* ── Title curtain ── */
+        .svc-title-mask { display: block; overflow: hidden; padding-bottom: 0.04em; }
+        .svc-title-word { display: block; }
+        .svc-h {
+          font-family: 'Syne', sans-serif; font-weight: 800;
+          letter-spacing: -0.035em; line-height: 0.95; margin-bottom: 16px;
+          font-size: clamp(2.2rem, 8vw, 3rem);
+        }
+        @media (min-width: 1024px) {
+          .svc-h { font-size: clamp(44px, 7vw, 90px); margin-bottom: 28px; }
+        }
+
+        /* ── Description ── */
+        .svc-p {
+          font-size: 0.88rem; color: rgba(240,237,232,0.38);
+          line-height: 1.65; font-weight: 300; max-width: 100%;
+        }
+        @media (min-width: 1024px) { .svc-p { font-size: 16px; max-width: 480px; } }
+
+        /* ── Keywords ── */
+        .svc-keywords {
+          display: flex; flex-wrap: wrap; gap: 0.5rem;
+          margin-top: 1.25rem;
+        }
+        .svc-kw {
+          font-family: var(--font-display); font-weight: 600;
+          font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+          padding: 5px 12px; border: 1px solid; border-radius: 2px;
+          white-space: nowrap;
         }
       `}</style>
     </section>
