@@ -390,7 +390,7 @@ export default function Hero() {
           max-width: 100%;
         }
         @media (min-width: 768px) {
-          .hero-sub { font-size: clamp(15px, 1.8vw, 20px); margin-bottom: 52px; max-width: 600px; }
+          .hero-sub { font-size: clamp(15px, 1.8vw, 20px); margin-bottom: 52px; max-width: 600px; margin-inline: auto; }
         }
 
         /* ── CTAs ── */
