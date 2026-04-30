@@ -223,16 +223,16 @@ export default function Services() {
     let currentIdx = 0
 
     /*
-     * Pin the section. Scroll distance = n panels × 80vh.
+     * Pin the section. Scroll distance = n panels × 150vh.
      * As user scrolls, cross-fade between cards.
      */
     ScrollTrigger.create({
       trigger: section,
       start: 'top top',
-      end: `+=${n * 80}vh`,
+      end: `+=${n * 300}vh`,
       pin: true,
       pinSpacing: true,
-      scrub: 0.5,
+      scrub: 1.2,
       invalidateOnRefresh: true,
       onEnter() {
         // Reveal first card when section enters
