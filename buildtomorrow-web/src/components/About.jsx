@@ -67,33 +67,32 @@ export default function About() {
       )
     }
 
-    // Mobile: paragraph and stats entry animations
-    if (mobile) {
-      const paragraphs = section.querySelectorAll('.about-right p')
-      paragraphs.forEach((p, i) => {
-        gsap.fromTo(p,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.7, ease: EASE, delay: i * 0.1,
-            scrollTrigger: { trigger: p, start: 'top 90%', once: true } }
+    // Right-side paragraphs entry
+    const paragraphs = section.querySelectorAll('.about-right p')
+    paragraphs.forEach((p, i) => {
+      gsap.fromTo(p,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: i * 0.1,
+          scrollTrigger: { trigger: p, start: 'top 92%', once: true } }
+      )
+    })
+
+    // Stats row entry
+    const statsRow = section.querySelector('.stats-row')
+    if (statsRow) {
+      gsap.fromTo(statsRow,
+        { opacity: 0, y: 24 },
+        { opacity: 1, y: 0, duration: 0.8, ease: EASE,
+          scrollTrigger: { trigger: statsRow, start: 'top 94%', once: true } }
+      )
+      const stats = statsRow.querySelectorAll('.stat')
+      stats.forEach((stat, i) => {
+        gsap.fromTo(stat,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.15 + i * 0.1,
+            scrollTrigger: { trigger: statsRow, start: 'top 94%', once: true } }
         )
       })
-
-      const statsRow = section.querySelector('.stats-row')
-      if (statsRow) {
-        gsap.fromTo(statsRow,
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.7, ease: EASE,
-            scrollTrigger: { trigger: statsRow, start: 'top 92%', once: true } }
-        )
-        const stats = statsRow.querySelectorAll('.stat')
-        stats.forEach((stat, i) => {
-          gsap.fromTo(stat,
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.5, ease: EASE, delay: 0.1 + i * 0.1,
-              scrollTrigger: { trigger: statsRow, start: 'top 92%', once: true } }
-          )
-        })
-      }
     }
   }, [], sectionRef)
 
