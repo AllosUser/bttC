@@ -205,7 +205,7 @@ export default function Hero() {
         const sp = document.createElement('span'); sp.className = 'hero-space'; titleEl.appendChild(sp); return
       }
       const wrap = document.createElement('span')
-      wrap.style.cssText = 'display:inline-block;white-space:nowrap;'
+      wrap.className = 'hero-word'
       for (const ch of token) {
         const s = document.createElement('span'); s.className = 'hero-char'; s.textContent = ch
         wrap.appendChild(s); charNodes.push(s)
@@ -376,9 +376,13 @@ export default function Hero() {
         @media (min-width: 768px) {
           .hero-title { font-size: clamp(4rem, 10vw, 9rem); line-height: 0.9; margin-bottom: 36px; }
         }
+        .hero-word { display: block; white-space: nowrap; }
         .hero-char  { display: inline-block; opacity: 0; will-change: transform, opacity; }
-        .hero-space { display: inline-block; width: 0.28em; }
-
+        .hero-space { display: none; }
+        @media (min-width: 768px) {
+          .hero-word { display: inline-block; }
+          .hero-space { display: inline-block; width: 0.28em; }
+        }
         /* ── Sub ── */
         .hero-sub {
           font-size: 0.9rem;
