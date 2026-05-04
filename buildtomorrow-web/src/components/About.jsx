@@ -1,14 +1,22 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect } from 'react'
+import gsap from 'gsap'
 import { useGSAP } from '../hooks/useGSAP'
 import { useReducedMotion } from '../hooks/useMediaQuery'
 
+/* ---------- Stat counter sub-component (desktop count-up) ---------- */
 function Stat({ target, suffix = '', label }) {
   const numRef = useRef(null)
   const [val, setVal] = useState(0)
-  useGSAP(({ gsap, ScrollTrigger }) => {
+  useGSAP(({ gsap: g, ScrollTrigger }) => {
     const obj = { val: 0 }
-    const tw  = gsap.to(obj, { val: target, duration: 1.2, ease: 'power2.out', onUpdate: () => setVal(Math.round(obj.val)), paused: true })
-    const st  = ScrollTrigger.create({ trigger: numRef.current, start: 'top 85%', once: true, onEnter: () => tw.play(), invalidateOnRefresh: true })
+    const tw = g.to(obj, {
+      val: target, duration: 1.2, ease: 'power2.out',
+      onUpdate: () => setVal(Math.round(obj.val)), paused: true,
+    })
+    const st = ScrollTrigger.create({
+      trigger: numRef.current, start: 'top 85%', once: true,
+      onEnter: () => tw.play(), invalidateOnRefresh: true,
+    })
     return () => { tw.kill(); st.kill() }
   }, [target])
   return (
@@ -19,9 +27,15 @@ function Stat({ target, suffix = '', label }) {
   )
 }
 function StaticStat({ value, label }) {
-  return <div className="stat"><span className="stat__num">{value}</span><span className="stat__label">{label}</span></div>
+  return (
+    <div className="stat">
+      <span className="stat__num">{value}</span>
+      <span className="stat__label">{label}</span>
+    </div>
+  )
 }
 
+/* ---------- About ---------- */
 export default function About() {
   const sectionRef  = useRef(null)
   const bgTextRef   = useRef(null)
@@ -29,77 +43,151 @@ export default function About() {
   const drawLineRef = useRef(null)
   const reduced     = useReducedMotion()
 
-  useGSAP(({ gsap, ScrollTrigger }) => {
-    const section  = sectionRef.current
+  /*
+   * ── MOBILE: hide elements BEFORE the browser paints ──────────────────────
+   * useLayoutEffect fires synchronously after DOM mutations, before paint,
+   * so the user never sees a flash of visible content before the IO fires.
+   */
+  useLayoutEffect(() => {
+    if (window.innerWidth >= 768) return
+    if (reduced) return
+    const section = sectionRef.current
     if (!section) return
-    const mobile   = window.innerWidth < 768
-    const EASE     = 'expo.out'
 
-    // Parallax layers — disabled on mobile to avoid jank
-    if (!mobile) {
-      if (bgTextRef.current) {
-        gsap.to(bgTextRef.current, { yPercent: -30, ease: 'none', scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } })
-      }
-      if (gridRef.current) {
-        gsap.to(gridRef.current,   { yPercent: -15, ease: 'none', scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } })
-      }
+    const label    = section.querySelector('.section-label')
+    const headline = section.querySelector('.about-headline')
+    const words    = headline ? headline.querySelectorAll('.about-headline__word') : []
+    const paras    = section.querySelectorAll('.about-right p')
+    const statsRow = section.querySelector('.stats-row')
+    const stats    = statsRow ? statsRow.querySelectorAll('.stat') : []
+
+    if (label)         gsap.set(label,            { opacity: 0, y: 16 })
+    if (words.length)  gsap.set(Array.from(words), { yPercent: 100, opacity: 0 })
+    if (paras.length)  gsap.set(Array.from(paras), { opacity: 0, y: 30 })
+    if (statsRow)      gsap.set(statsRow,           { opacity: 0, y: 24 })
+    if (stats.length)  gsap.set(Array.from(stats),  { opacity: 0, y: 20 })
+    if (drawLineRef.current) gsap.set(drawLineRef.current, { scaleX: 0 })
+  }, [reduced])
+
+  /*
+   * ── MOBILE: IntersectionObserver reveal ───────────────────────────────────
+   * Observes .about-grid (the actual content box, not the padded outer
+   * section wrapper). Fires only when 50 % of the content is on-screen —
+   * completely immune to GSAP / Lenis scroll-position miscalculation.
+   */
+  useEffect(() => {
+    if (window.innerWidth >= 768) return
+    if (reduced) return
+    const section = sectionRef.current
+    if (!section) return
+
+    const contentBox = section.querySelector('.about-grid')
+    if (!contentBox) return
+
+    const EASE = 'expo.out'
+    let fired = false
+
+    const runReveal = () => {
+      if (fired) return
+      fired = true
+
+      const label    = section.querySelector('.section-label')
+      const headline = section.querySelector('.about-headline')
+      const words    = headline ? Array.from(headline.querySelectorAll('.about-headline__word')) : []
+      const paras    = Array.from(section.querySelectorAll('.about-right p'))
+      const statsRow = section.querySelector('.stats-row')
+      const stats    = statsRow ? Array.from(statsRow.querySelectorAll('.stat')) : []
+      const drawLine = drawLineRef.current
+
+      if (label)      gsap.to(label,    { opacity: 1, y: 0, duration: 0.6, ease: EASE })
+      if (words.length) gsap.to(words,  { yPercent: 0, opacity: 1, duration: 0.9, ease: EASE, stagger: 0.08, delay: 0.1 })
+      if (drawLine)   gsap.to(drawLine, { scaleX: 1, duration: 1.2, ease: EASE, delay: 0.3 })
+      paras.forEach((p, i) => gsap.to(p, { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: 0.5 + i * 0.1 }))
+      if (statsRow)   gsap.to(statsRow, { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: 0.7 })
+      stats.forEach((s, i) => gsap.to(s, { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.85 + i * 0.1 }))
     }
 
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          runReveal()
+          io.disconnect()
+        }
+      },
+      // threshold 0.5 = half the content grid must be visible before firing
+      { threshold: 0.5, rootMargin: '0px' },
+    )
+
+    io.observe(contentBox)
+    return () => io.disconnect()
+  }, [reduced])
+
+  /*
+   * ── DESKTOP: GSAP ScrollTrigger (unchanged behavior) ────────────────────
+   * Returns early on mobile so this block never interferes with the IO path.
+   */
+  useGSAP(({ gsap: g, ScrollTrigger }) => {
+    const section = sectionRef.current
+    if (!section) return
+    if (window.innerWidth < 768) return   // mobile handled by IO above
+
+    const EASE = 'expo.out'
+
+    // Parallax bg layers
+    if (bgTextRef.current) {
+      g.to(bgTextRef.current, {
+        yPercent: -30, ease: 'none',
+        scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
+      })
+    }
+    if (gridRef.current) {
+      g.to(gridRef.current, {
+        yPercent: -15, ease: 'none',
+        scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true },
+      })
+    }
+
+    // Draw line
     if (drawLineRef.current) {
-      gsap.fromTo(drawLineRef.current, { scaleX: 0 }, { scaleX: 1, duration: 1.2, ease: EASE, scrollTrigger: { trigger: drawLineRef.current, start: 'top 85%', once: true } })
+      g.fromTo(drawLineRef.current,
+        { scaleX: 0 },
+        { scaleX: 1, duration: 1.2, ease: EASE, scrollTrigger: { trigger: drawLineRef.current, start: 'top 85%', once: true } },
+      )
     }
 
+    // Headline words curtain
     const headline = section.querySelector('.about-headline')
     if (headline) {
-      const words = headline.querySelectorAll('.about-headline__word')
-      gsap.set(words, { yPercent: 100, opacity: 0 })
-      ScrollTrigger.create({
-        trigger: headline, start: mobile ? 'top 65%' : 'top 80%', once: true,
-        onEnter: () => {
-          gsap.to(words, { yPercent: 0, opacity: 1, duration: 0.9, ease: EASE, stagger: 0.08 })
-        }
+      g.from(headline.querySelectorAll('.about-headline__word'), {
+        yPercent: 100, opacity: 0, duration: 0.9, ease: EASE, stagger: 0.08,
+        scrollTrigger: { trigger: headline, start: 'top 80%', once: true },
       })
     }
 
-    // Section label entry
+    // Section label
     const label = section.querySelector('.section-label')
     if (label) {
-      gsap.set(label, { opacity: 0, y: 16 })
-      ScrollTrigger.create({
-        trigger: label, start: mobile ? 'top 70%' : 'top 90%', once: true,
-        onEnter: () => {
-          gsap.to(label, { opacity: 1, y: 0, duration: 0.6, ease: EASE })
-        }
-      })
+      g.fromTo(label,
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.6, ease: EASE, scrollTrigger: { trigger: label, start: 'top 90%', once: true } },
+      )
     }
 
-    // Right-side paragraphs entry
-    const paragraphs = section.querySelectorAll('.about-right p')
-    gsap.set(paragraphs, { opacity: 0, y: 30 })
-    paragraphs.forEach((p, i) => {
-      ScrollTrigger.create({
-        trigger: p, start: mobile ? 'top 75%' : 'top 92%', once: true,
-        onEnter: () => {
-          gsap.to(p, { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: i * 0.1 })
-        }
-      })
+    // Paragraphs
+    section.querySelectorAll('.about-right p').forEach((p, i) => {
+      g.fromTo(p,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: i * 0.1, scrollTrigger: { trigger: p, start: 'top 92%', once: true } },
+      )
     })
 
-    // Stats row entry
+    // Stats row
     const statsRow = section.querySelector('.stats-row')
     if (statsRow) {
       const stats = statsRow.querySelectorAll('.stat')
-      gsap.set(statsRow, { opacity: 0, y: 24 })
-      gsap.set(stats, { opacity: 0, y: 20 })
-
-      ScrollTrigger.create({
-        trigger: statsRow, start: mobile ? 'top 80%' : 'top 94%', once: true,
-        onEnter: () => {
-          gsap.to(statsRow, { opacity: 1, y: 0, duration: 0.8, ease: EASE })
-          stats.forEach((stat, i) => {
-            gsap.to(stat, { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.15 + i * 0.1 })
-          })
-        }
+      g.fromTo(statsRow, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, ease: EASE, scrollTrigger: { trigger: statsRow, start: 'top 94%', once: true } })
+      stats.forEach((s, i) => {
+        g.fromTo(s, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.15 + i * 0.1, scrollTrigger: { trigger: statsRow, start: 'top 94%', once: true } })
       })
     }
   }, [], sectionRef)
@@ -108,7 +196,6 @@ export default function About() {
 
   return (
     <section id="about" ref={sectionRef} className="about" aria-label="About BuildTomorrow">
-      {/* Parallax bg — hidden on mobile via CSS */}
       <div className="about__bg" ref={bgTextRef} aria-hidden="true">BUILDTOMORROW</div>
       <svg className="about__grid" ref={gridRef} aria-hidden="true" preserveAspectRatio="none">
         <defs>
@@ -141,9 +228,17 @@ export default function About() {
 
             <div className="stats-row">
               {reduced ? (
-                <><StaticStat value="50+" label="Projects shipped" /><StaticStat value="100%" label="Client satisfaction" /><StaticStat value="EU" label="Based & operating" /></>
+                <>
+                  <StaticStat value="50+" label="Projects shipped" />
+                  <StaticStat value="100%" label="Client satisfaction" />
+                  <StaticStat value="EU" label="Based & operating" />
+                </>
               ) : (
-                <><Stat target={50} suffix="+" label="Projects shipped" /><Stat target={100} suffix="%" label="Client satisfaction" /><StaticStat value="EU" label="Based & operating" /></>
+                <>
+                  <Stat target={50} suffix="+" label="Projects shipped" />
+                  <Stat target={100} suffix="%" label="Client satisfaction" />
+                  <StaticStat value="EU" label="Based & operating" />
+                </>
               )}
             </div>
           </div>
@@ -159,10 +254,7 @@ export default function About() {
           overflow: hidden;
         }
 
-        /* Background elements — hidden on mobile */
-        .about__bg {
-          display: none;
-        }
+        .about__bg { display: none; }
         @media (min-width: 768px) {
           .about__bg {
             display: block;
@@ -174,9 +266,7 @@ export default function About() {
             pointer-events: none; user-select: none; z-index: 1; will-change: transform;
           }
         }
-        .about__grid {
-          display: none;
-        }
+        .about__grid { display: none; }
         @media (min-width: 768px) {
           .about__grid {
             display: block;
@@ -187,14 +277,13 @@ export default function About() {
 
         .about__inner {
           position: relative; z-index: 3;
-          max-width: 1400px; margin: 0 auto;
-          padding: 0 1.25rem;
+          max-width: 1400px; margin: 0 auto; padding: 0 1.25rem;
         }
         @media (min-width: 768px) { .about__inner { padding: 0 5vw; } }
 
         .about-grid {
           display: grid;
-          grid-template-columns: 1fr;    /* single column on mobile */
+          grid-template-columns: 1fr;
           gap: 2.5rem;
           align-items: start;
         }
@@ -203,8 +292,7 @@ export default function About() {
         }
 
         .about-left {
-          display: flex; flex-direction: column; gap: 1.5rem;
-          position: static;
+          display: flex; flex-direction: column; gap: 1.5rem; position: static;
         }
         @media (min-width: 900px) {
           .about-left { gap: 2rem; position: sticky; top: 120px; }
@@ -234,11 +322,8 @@ export default function About() {
         .about-right p { max-width: 560px; }
 
         .stats-row {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-          margin-top: 1.5rem; padding-top: 1.5rem;
-          border-top: 1px solid var(--dim);
+          display: grid; grid-template-columns: repeat(3, 1fr);
+          gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--dim);
         }
         @media (min-width: 768px) { .stats-row { gap: 1.5rem; margin-top: 2rem; padding-top: 2rem; } }
 
