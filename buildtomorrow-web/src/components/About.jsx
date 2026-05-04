@@ -223,8 +223,8 @@ export default function About() {
           </div>
 
           <div className="about-right">
-            <p>We are a Cyprus-based studio building products at the intersection of engineering rigor and design ambition. Our work spans web, mobile, cybersecurity, and complex systems for companies that refuse the average.</p>
-            <p>Every line of code is written with intent. Every interface earns its place. We don't ship templates — we build the infrastructure of tomorrow, one precise decision at a time.</p>
+            <p>We are a Cyprus-based studio building products at the intersection of engineering rigor and design ambition. Our work spans web, mobile, artificial intelligence, and complex systems for companies that refuse the average.</p>
+            <p>Every line of code is written with intent. With deep regulatory awareness, we don't just ship products — we build the secure infrastructure of tomorrow, one precise decision at a time.</p>
 
             <div className="stats-row">
               {reduced ? (

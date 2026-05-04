@@ -28,24 +28,35 @@ const ICON_SYSTEMS = (
     <path d="M22 7v4M22 33v4M7 22h4M33 22h4M12.1 12.1l2.8 2.8M29.1 29.1l2.8 2.8M31.9 12.1l-2.8 2.8M14.9 29.1l-2.8 2.8" stroke="#42f5b0" strokeWidth="1.4" strokeLinecap="round" />
   </svg>
 )
+const ICON_AI = (
+  <svg className="svc-icon" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+    <path d="M22 6L10 12v20l12 6 12-6V12L22 6z" stroke="#c8f542" strokeWidth="1.4" strokeLinejoin="round" />
+    <path d="M22 14v16M14 22h16" stroke="#c8f542" strokeWidth="1.4" strokeLinecap="round" />
+    <circle cx="22" cy="22" r="3" fill="#c8f542" fillOpacity=".2" stroke="#c8f542" strokeWidth="1.4" />
+  </svg>
+)
 
 const SERVICES = [
-  { id: '01', tag: 'Full Stack', titleLines: ['Web', 'Development'],
-    desc: 'Performant, scalable digital products built with obsessive attention to craft. From architecture to the last pixel. We engineer every layer — front-end, back-end, and everything in between.',
-    keywords: ['React', 'Next.js', 'Node.js', 'PostgreSQL', 'REST & GraphQL', 'CI/CD', 'Cloud Deploy'],
+  { id: '01', tag: 'Full Stack', titleLines: ['Web', 'Platforms'],
+    desc: 'Performant, scalable web applications built with uncompromising engineering precision. We design and build high-performance web platforms with resilient architectures, seamless user experience, and cloud-native infrastructure ready for scale.',
+    keywords: ['React', 'Next.js', 'Node.js', 'PostgreSQL', 'Cloud'],
     color: '#09090c', accent: '#c8f542', icon: ICON_WEB },
-  { id: '02', tag: 'iOS & Android', titleLines: ['Mobile', 'Apps'],
-    desc: 'Native iOS, Android and cross-platform apps that feel inevitable. Precision UX from day one. Smooth animations, offline-first architecture, and seamless App Store delivery.',
-    keywords: ['Swift', 'Kotlin', 'React Native', 'Flutter', 'Push Notifications', 'In-App Payments'],
+  { id: '02', tag: 'iOS & Android', titleLines: ['Mobile', 'Ecosystems'],
+    desc: 'Mobile environments engineered for flawless execution and real-world performance. From native apps to cross-platform systems, we create mobile products that are fast, stable, and deeply integrated into modern digital ecosystems.',
+    keywords: ['Swift', 'Kotlin', 'React Native', 'Mobile UX'],
     color: '#080b0a', accent: '#42f5b0', icon: ICON_MOBILE },
-  { id: '03', tag: 'Protection & Compliance', titleLines: ['Cyber', 'Security'],
-    desc: 'Enterprise-grade protection for modern threats. Penetration testing, security audits, threat modeling, and hardened infrastructure — so you can scale with confidence.',
-    keywords: ['Pen Testing', 'OWASP', 'SOC 2', 'Zero Trust', 'Encryption', 'Incident Response'],
-    color: '#08090b', accent: '#c8f542', icon: ICON_CYBER },
-  { id: '04', tag: 'Enterprise Grade', titleLines: ['Systems', 'Dev'],
-    desc: 'Low-level systems, APIs, and infrastructure built for infinite scale. High-throughput pipelines, distributed architectures, and zero-downtime deployments. No compromises.',
-    keywords: ['Microservices', 'Docker', 'Kubernetes', 'gRPC', 'Event-Driven', 'Load Balancing'],
-    color: '#08080e', accent: '#42f5b0', icon: ICON_SYSTEMS },
+  { id: '03', tag: 'Enterprise Grade', titleLines: ['Systems', 'Architecture'],
+    desc: 'Infrastructure and distributed systems designed for scale, resilience, and performance. We build the backbone of complex platforms using microservices, event-driven systems, and fault-tolerant infrastructure.',
+    keywords: ['Kubernetes', 'Docker', 'APIs', 'Distributed Systems'],
+    color: '#08090b', accent: '#c8f542', icon: ICON_SYSTEMS },
+  { id: '04', tag: 'Artificial Intelligence', titleLines: ['Applied', 'AI'],
+    desc: 'Strategic AI systems that create real operational advantage. We integrate and deploy AI solutions, from LLMs to predictive systems, tailored to your data, workflows, and business logic.',
+    keywords: ['LLMs', 'RAG', 'Automation', 'Machine Learning'],
+    color: '#08080e', accent: '#42f5b0', icon: ICON_AI },
+  { id: '05', tag: 'Protection & Compliance', titleLines: ['Security,', 'Governance', '& Risk'],
+    desc: 'Security, compliance, and risk management for a complex digital world. We secure systems, ensure regulatory alignment, and perform AI risk assessments to protect your infrastructure and decision-making processes.',
+    keywords: ['Security', 'AI Risk', 'GDPR', 'SOC2', 'Zero Trust'],
+    color: '#0a0a09', accent: '#c8f542', icon: ICON_CYBER },
 ]
 
 function ServicePanel({ service, mobile, total }) {

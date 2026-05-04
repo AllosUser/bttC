@@ -6,7 +6,7 @@ import { useReducedMotion } from '../hooks/useMediaQuery'
 const TITLE_TEXT = 'We Build Digital Futures'
 const TYPE_LINES = [
   'Crafting the digital infrastructure of tomorrow.',
-  'Web · Mobile · Security · Systems',
+  'Web · Mobile · AI · Systems · Security',
 ]
 
 /* ---------- CSS gradient fallback for low-end mobile ---------- */
