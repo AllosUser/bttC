@@ -53,15 +53,15 @@ export default function CTA() {
 
     const elements = [label, sub, form, meta].filter(Boolean)
     
+    // Set initial state so they are hidden before scroll
+    gsap.set(elements, { opacity: 0, y: 30 })
+
     ScrollTrigger.create({
       trigger: section,
-      start: 'top 65%',
+      start: 'top 85%',
       once: true,
       onEnter: () => {
-        gsap.fromTo(elements,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.8, ease: EASE, stagger: 0.12 }
-        )
+        gsap.to(elements, { opacity: 1, y: 0, duration: 0.8, ease: EASE, stagger: 0.12 })
       }
     })
   }, [reduced], sectionRef)

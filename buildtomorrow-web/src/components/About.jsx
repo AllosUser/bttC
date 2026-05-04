@@ -51,47 +51,55 @@ export default function About() {
 
     const headline = section.querySelector('.about-headline')
     if (headline) {
-      gsap.from(headline.querySelectorAll('.about-headline__word'), {
-        yPercent: 100, opacity: 0, duration: 0.9, ease: EASE, stagger: 0.08,
-        scrollTrigger: { trigger: headline, start: mobile ? 'top 65%' : 'top 80%', once: true },
+      const words = headline.querySelectorAll('.about-headline__word')
+      gsap.set(words, { yPercent: 100, opacity: 0 })
+      ScrollTrigger.create({
+        trigger: headline, start: mobile ? 'top 65%' : 'top 80%', once: true,
+        onEnter: () => {
+          gsap.to(words, { yPercent: 0, opacity: 1, duration: 0.9, ease: EASE, stagger: 0.08 })
+        }
       })
     }
 
     // Section label entry
     const label = section.querySelector('.section-label')
     if (label) {
-      gsap.fromTo(label,
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.6, ease: EASE,
-          scrollTrigger: { trigger: label, start: mobile ? 'top 70%' : 'top 90%', once: true } }
-      )
+      gsap.set(label, { opacity: 0, y: 16 })
+      ScrollTrigger.create({
+        trigger: label, start: mobile ? 'top 70%' : 'top 90%', once: true,
+        onEnter: () => {
+          gsap.to(label, { opacity: 1, y: 0, duration: 0.6, ease: EASE })
+        }
+      })
     }
 
     // Right-side paragraphs entry
     const paragraphs = section.querySelectorAll('.about-right p')
+    gsap.set(paragraphs, { opacity: 0, y: 30 })
     paragraphs.forEach((p, i) => {
-      gsap.fromTo(p,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: i * 0.1,
-          scrollTrigger: { trigger: p, start: mobile ? 'top 75%' : 'top 92%', once: true } }
-      )
+      ScrollTrigger.create({
+        trigger: p, start: mobile ? 'top 75%' : 'top 92%', once: true,
+        onEnter: () => {
+          gsap.to(p, { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: i * 0.1 })
+        }
+      })
     })
 
     // Stats row entry
     const statsRow = section.querySelector('.stats-row')
     if (statsRow) {
-      gsap.fromTo(statsRow,
-        { opacity: 0, y: 24 },
-        { opacity: 1, y: 0, duration: 0.8, ease: EASE,
-          scrollTrigger: { trigger: statsRow, start: mobile ? 'top 80%' : 'top 94%', once: true } }
-      )
       const stats = statsRow.querySelectorAll('.stat')
-      stats.forEach((stat, i) => {
-        gsap.fromTo(stat,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.15 + i * 0.1,
-            scrollTrigger: { trigger: statsRow, start: mobile ? 'top 80%' : 'top 94%', once: true } }
-        )
+      gsap.set(statsRow, { opacity: 0, y: 24 })
+      gsap.set(stats, { opacity: 0, y: 20 })
+
+      ScrollTrigger.create({
+        trigger: statsRow, start: mobile ? 'top 80%' : 'top 94%', once: true,
+        onEnter: () => {
+          gsap.to(statsRow, { opacity: 1, y: 0, duration: 0.8, ease: EASE })
+          stats.forEach((stat, i) => {
+            gsap.to(stat, { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.15 + i * 0.1 })
+          })
+        }
       })
     }
   }, [], sectionRef)
