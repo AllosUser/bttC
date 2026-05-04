@@ -32,7 +32,7 @@ export default function CTA() {
     const mobile = window.innerWidth < 768
     let cleanup = null
     const trigger = ScrollTrigger.create({
-      trigger: el, start: 'top 85%', once: true,
+      trigger: el, start: mobile ? 'top 65%' : 'top 85%', once: true,
       onEnter: () => { cleanup = scrambleText(el, HEADLINE_TEXT, mobile) },
     })
     return () => { cleanup?.(); trigger.kill() }
@@ -55,7 +55,7 @@ export default function CTA() {
     
     ScrollTrigger.create({
       trigger: section,
-      start: 'top 85%',
+      start: 'top 65%',
       once: true,
       onEnter: () => {
         gsap.fromTo(elements,

@@ -53,7 +53,7 @@ export default function About() {
     if (headline) {
       gsap.from(headline.querySelectorAll('.about-headline__word'), {
         yPercent: 100, opacity: 0, duration: 0.9, ease: EASE, stagger: 0.08,
-        scrollTrigger: { trigger: headline, start: 'top 80%', once: true },
+        scrollTrigger: { trigger: headline, start: mobile ? 'top 65%' : 'top 80%', once: true },
       })
     }
 
@@ -63,7 +63,7 @@ export default function About() {
       gsap.fromTo(label,
         { opacity: 0, y: 16 },
         { opacity: 1, y: 0, duration: 0.6, ease: EASE,
-          scrollTrigger: { trigger: label, start: 'top 90%', once: true } }
+          scrollTrigger: { trigger: label, start: mobile ? 'top 70%' : 'top 90%', once: true } }
       )
     }
 
@@ -73,7 +73,7 @@ export default function About() {
       gsap.fromTo(p,
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, duration: 0.8, ease: EASE, delay: i * 0.1,
-          scrollTrigger: { trigger: p, start: 'top 92%', once: true } }
+          scrollTrigger: { trigger: p, start: mobile ? 'top 75%' : 'top 92%', once: true } }
       )
     })
 
@@ -83,14 +83,14 @@ export default function About() {
       gsap.fromTo(statsRow,
         { opacity: 0, y: 24 },
         { opacity: 1, y: 0, duration: 0.8, ease: EASE,
-          scrollTrigger: { trigger: statsRow, start: 'top 94%', once: true } }
+          scrollTrigger: { trigger: statsRow, start: mobile ? 'top 80%' : 'top 94%', once: true } }
       )
       const stats = statsRow.querySelectorAll('.stat')
       stats.forEach((stat, i) => {
         gsap.fromTo(stat,
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.6, ease: EASE, delay: 0.15 + i * 0.1,
-            scrollTrigger: { trigger: statsRow, start: 'top 94%', once: true } }
+            scrollTrigger: { trigger: statsRow, start: mobile ? 'top 80%' : 'top 94%', once: true } }
         )
       })
     }
