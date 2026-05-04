@@ -1,7 +1,6 @@
 const ITEMS = [
-  'Web Development', 'Mobile Applications', 'Cybersecurity',
-  'Systems Architecture', 'UI/UX Design', 'Cloud Solutions',
-  'API Development', 'Digital Transformation',
+  'Digital Transformation', 'Web Platforms', 'Applied AI',
+  'Security & Governance', 'Mobile Ecosystems', 'Systems Architecture',
 ]
 
 function MarqueeRow({ ariaHidden = false }) {
