@@ -6,6 +6,10 @@ import { useReducedMotion } from '../hooks/useMediaQuery'
 const TITLE_TEXT = 'We Build Digital Futures'
 const TYPE_LINES = [
   'Web · AI · Systems · Security',
+  'Secure platforms built to scale',
+  'AI-powered systems for modern teams',
+  'Engineering digital infrastructure',
+  'Designed in Cyprus. Built for tomorrow.',
 ]
 
 /* ---------- CSS gradient fallback for low-end mobile ---------- */
@@ -229,17 +233,38 @@ export default function Hero() {
     }, '-=0.2')
     tl.to(ctasEl, { opacity: 1, duration: 0.5, ease: 'power2.out' })
 
-    let cancelled = false, lineIdx = 0, charIdx = 0
-    let typeTO = null, switchTO = null, restartTO = null, blinkIV = null
-    const typeStep = () => {
+    let cancelled = false, lineIdx = 0
+    let subAnim = null
+
+    const rotateSub = () => {
       if (cancelled) return
-      subEl.textContent = TYPE_LINES[0]
+      lineIdx = (lineIdx + 1) % TYPE_LINES.length
+      
+      gsap.to(subEl, {
+        opacity: 0,
+        y: -10,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: () => {
+          subEl.textContent = TYPE_LINES[lineIdx]
+          gsap.fromTo(subEl, 
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+          )
+        }
+      })
+      subAnim = setTimeout(rotateSub, 3500)
     }
-    tl.add(() => typeStep(), '-=0.4')
+
+    tl.add(() => {
+      subEl.textContent = TYPE_LINES[0]
+      gsap.to(subEl, { opacity: 1, duration: 0.5 })
+      subAnim = setTimeout(rotateSub, 3500)
+    }, '-=0.4')
 
     return () => {
       cancelled = true; tl.kill()
-      clearTimeout(typeTO); clearTimeout(switchTO); clearTimeout(restartTO); clearInterval(blinkIV)
+      clearTimeout(subAnim)
     }
   }, [reduced])
 
@@ -316,8 +341,8 @@ export default function Hero() {
         }
         @media (min-width: 768px) {
           .hero-content { 
-            max-width: 1400px; 
-            padding: 60px 2rem 0; 
+            max-width: 1200px; 
+            padding: 50px 2rem 0; 
           }
         }
 
@@ -338,10 +363,10 @@ export default function Hero() {
         }
         @media (min-width: 768px) {
           .hero-eyebrow { 
-            font-size: 13px; 
+            font-size: 12px; 
             letter-spacing: 0.32em; 
             gap: 16px; 
-            margin-bottom: clamp(2rem, 4vw, 3.5rem); 
+            margin-bottom: clamp(1.8rem, 3.5vw, 2.8rem); 
           }
         }
         .hero-eyebrow::before, .hero-eyebrow::after {
@@ -355,36 +380,40 @@ export default function Hero() {
 
         .hero-title {
           font-family: 'Syne', sans-serif;
-          font-size: clamp(3.2rem, 11vw, 5rem);
+          font-size: clamp(3rem, 11vw, 4.2rem);
           font-weight: 800;
-          line-height: 0.86;
+          line-height: 0.84;
           letter-spacing: -0.04em;
           color: var(--white);
-          margin-bottom: 28px;
+          margin-bottom: 24px;
           overflow: visible;
           display: flex;
           flex-direction: column;
           align-items: center;
         }
         @media (min-width: 768px) {
-          .hero-title { font-size: clamp(5rem, 10vw, 9.5rem); margin-bottom: 32px; }
+          .hero-title { font-size: clamp(4.4rem, 8.8vw, 8.6rem); margin-bottom: 28px; }
         }
         .hero-word { display: block; white-space: nowrap; }
         .hero-char  { display: inline-block; opacity: 0; will-change: transform, opacity; }
         .hero-space { display: none; }
-        /* ── Sub ── */
         .hero-sub {
-          font-size: 0.9rem;
-          color: var(--bt-muted);
+          font-size: 0.85rem;
+          color: rgba(244, 247, 251, 0.68);
           font-weight: 400;
-          margin-bottom: 36px;
-          min-height: 1.2em;
+          margin-bottom: 32px;
+          min-height: 1.6em;
           letter-spacing: 0.05em;
           max-width: 100%;
           text-align: center;
+          opacity: 0;
+          white-space: nowrap;
         }
         @media (min-width: 768px) {
-          .hero-sub { font-size: clamp(14px, 1.2vw, 18px); margin-bottom: 48px; }
+          .hero-sub { font-size: clamp(14px, 1.1vw, 17px); margin-bottom: 42px; }
+        }
+        @media (max-width: 768px) {
+          .hero-sub { white-space: normal; }
         }
 
         /* ── CTAs ── */
