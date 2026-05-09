@@ -4,10 +4,14 @@ import gsap from 'gsap'
 
 const LINKS = [
   { label: 'Services', href: '#services' },
+  { label: 'Process',  href: '#process' },
   { label: 'Work',     href: '#work' },
   { label: 'About',   href: '#about' },
   { label: 'Contact', href: '#contact' },
 ]
+
+import logoFull from '../assets/bt_logo_text.png'
+import logoIcon from '../assets/bt_Logo_noText.svg'
 
 /* ---------- Desktop hover-slide link ---------- */
 function NavLink({ label, href }) {
@@ -110,9 +114,11 @@ export default function Nav() {
         className={`bt-nav ${scrolled ? 'bt-nav--scrolled' : ''}`}
       >
         <div className="bt-nav__inner">
-          <a href="#top" className="bt-logo">
-            <span className="bt-logo__build">Build</span>
-            <span className="bt-logo__tomorrow">Tomorrow</span>
+          <a href="#top" className="bt-logo" aria-label="BuildTomorrow Home">
+            <picture>
+              <source media="(max-width: 480px)" srcSet={logoIcon} />
+              <img src={logoFull} alt="BuildTomorrow Logo" className="bt-logo-img" />
+            </picture>
           </a>
 
           {/* Desktop links */}
@@ -159,7 +165,7 @@ export default function Nav() {
           .bt-nav { height: 80px; }
         }
         .bt-nav--scrolled {
-          background: rgba(8,8,10,0.92);
+          background: rgba(5,7,19,0.92);
           backdrop-filter: blur(20px) saturate(180%);
           -webkit-backdrop-filter: blur(20px) saturate(180%);
           border-bottom-color: var(--dim);
@@ -178,25 +184,30 @@ export default function Nav() {
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
+          position: relative;
         }
         @media (min-width: 1024px) {
           .bt-nav__inner { padding: 0 5vw; }
         }
-
         /* ── Logo ── */
         .bt-logo {
-          font-family: var(--font-display);
-          font-weight: 800;
-          font-size: 0.9rem;
-          letter-spacing: -0.01em;
-          line-height: 1;
+          display: flex;
+          align-items: center;
+          height: 100%;
           flex-shrink: 0;
+          position: relative;
+          z-index: 2;
+        }
+        .bt-logo-img {
+          height: 34px;
+          width: auto;
+          display: block;
+          object-fit: contain;
         }
         @media (min-width: 1024px) {
-          .bt-logo { font-size: 1.05rem; }
+          .bt-logo-img { height: 48px; }
         }
-        .bt-logo__build    { color: var(--white); }
-        .bt-logo__tomorrow { color: var(--accent); }
+
 
         /* ── Desktop links — hidden on mobile ── */
         .bt-nav__links {
@@ -204,6 +215,9 @@ export default function Nav() {
           align-items: center;
           gap: 2.5rem;
           list-style: none;
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
         }
         @media (min-width: 1024px) {
           .bt-nav__links { display: flex; }
@@ -213,7 +227,7 @@ export default function Nav() {
           display: inline-block;
           font-family: var(--font-body);
           font-weight: 400;
-          font-size: 0.82rem;
+          font-size: 0.94rem;
           letter-spacing: 0.02em;
           color: var(--white);
           padding: 0.4rem 0;
@@ -241,6 +255,9 @@ export default function Nav() {
         /* ── Desktop CTA — hidden on mobile ── */
         .bt-nav__cta {
           display: none;
+          position: relative;
+          z-index: 2;
+          margin-left: auto;
         }
         @media (min-width: 1024px) {
           .bt-nav__cta {
@@ -252,8 +269,8 @@ export default function Nav() {
             letter-spacing: 0.18em;
             text-transform: uppercase;
             padding: 0.7rem 1.4rem;
-            border: 1px solid rgba(200,245,66,0.35);
-            color: var(--accent);
+            border: 1px solid rgba(0, 217, 255, 0.35);
+            color: var(--bt-cyan);
             background: transparent;
             overflow: hidden;
             position: relative;
@@ -264,12 +281,12 @@ export default function Nav() {
             content: '';
             position: absolute;
             inset: 0;
-            background: var(--accent);
+            background: var(--bt-gradient);
             transform: scaleX(0);
             transform-origin: left;
             transition: transform 0.35s var(--ease-in-out);
           }
-          .bt-nav__cta:hover { color: var(--black); }
+          .bt-nav__cta:hover { color: var(--bt-black); }
           .bt-nav__cta:hover::before { transform: scaleX(1); }
         }
 
@@ -333,11 +350,11 @@ export default function Nav() {
         .mob-link {
           font-family: var(--font-display);
           font-weight: 800;
-          font-size: clamp(2.5rem, 8vw, 4rem);
+          font-size: clamp(2.1rem, 7vw, 3.5rem);
           color: var(--white);
           letter-spacing: -0.02em;
-          line-height: 1.1;
-          padding: 0.5rem 0;
+          line-height: 1.0;
+          padding: 0.35rem 0;
           display: block;
           border-bottom: 1px solid var(--dim);
           transition: color 0.25s;
@@ -347,16 +364,16 @@ export default function Nav() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          margin-top: 2.5rem;
-          padding: 1.1rem 2rem;
-          background: var(--accent);
-          color: var(--black);
+          margin-top: 2rem;
+          padding: 1rem 2rem;
+          background: var(--bt-gradient);
+          color: var(--bt-black);
           font-family: var(--font-display);
           font-weight: 700;
-          font-size: 0.85rem;
+          font-size: 0.75rem;
           letter-spacing: 0.15em;
           text-transform: uppercase;
-          min-height: 52px;
+          min-height: 48px;
         }
       `}</style>
     </>

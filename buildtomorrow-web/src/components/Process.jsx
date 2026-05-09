@@ -2,10 +2,10 @@ import { useRef, useState, useEffect } from 'react'
 import { useGSAP } from '../hooks/useGSAP'
 
 const STEPS = [
-  { id: '01', title: 'Discovery',     desc: 'Deep-dive into your goals, users, and technical constraints.' },
-  { id: '02', title: 'Architecture',  desc: 'Technical planning, stack selection, and development roadmap.' },
-  { id: '03', title: 'Build',         desc: 'Agile development with weekly check-ins and live previews.' },
-  { id: '04', title: 'Launch & Scale',desc: 'QA, deployment, and ongoing performance optimization.' },
+  { id: '01', title: 'Discovery',     desc: 'Understand business goals, technical constraints, risks, and opportunities.' },
+  { id: '02', title: 'Architecture',  desc: 'Design scalable systems with security, compliance, and failure scenarios in mind.' },
+  { id: '03', title: 'Build',         desc: 'Develop with clean engineering, fast iteration, and production-level standards.' },
+  { id: '04', title: 'Launch & Scale',desc: 'Deploy, monitor, secure, and improve continuously.' },
 ]
 
 export default function Process() {
@@ -128,12 +128,12 @@ export default function Process() {
   }, [isMobile], sectionRef)
 
   return (
-    <section id="work" ref={sectionRef} className="process-section" aria-label="Our process">
+    <section id="process" ref={sectionRef} className="process-section" aria-label="Our process">
       <div className="process-inner">
         <header className="process-header">
           <span className="section-label">How We Build</span>
           <h2 className="process-title">A process refined by precision.</h2>
-          <p className="process-sub">Four phases, no shortcuts. Every BuildTomorrow project moves through this rhythm.</p>
+          <p className="process-sub">Four phases, no shortcuts. Every system is designed with security, scalability, and failure in mind.</p>
         </header>
 
         {/* ── Desktop grid (hidden on mobile) ── */}
@@ -144,7 +144,7 @@ export default function Process() {
                 <line key={i} className="process-line"
                   x1={`${(i+1)*(100/STEPS.length)-(50/STEPS.length)+4}%`} y1="50%"
                   x2={`${(i+1)*(100/STEPS.length)+(50/STEPS.length)-4}%`} y2="50%"
-                  stroke="#c8f542" strokeWidth="1" strokeOpacity="0.3" />
+                  stroke="var(--bt-blue)" strokeWidth="1" strokeOpacity="0.3" />
               ))}
             </svg>
             {STEPS.map((s, i) => (
@@ -180,7 +180,7 @@ export default function Process() {
         .process-section {
           position: relative;
           width: 100vw;
-          min-height: 100vh;
+          min-height: 92vh;
           background: var(--surface);
           border-top: 1px solid var(--dim);
           border-bottom: 1px solid var(--dim);
@@ -189,12 +189,12 @@ export default function Process() {
         .process-inner {
           position: relative;
           width: 100%; max-width: 1600px; margin: 0 auto;
-          padding: clamp(3.5rem, 8vh, 8rem) 1.25rem;
+          padding: clamp(3.5rem, 7vh, 6rem) 1.25rem;
           display: flex; flex-direction: column;
-          gap: clamp(2rem, 5vh, 6rem);
+          gap: clamp(2rem, 4vh, 4rem);
         }
         @media (min-width: 1024px) {
-          .process-inner { padding: clamp(4rem, 10vh, 8rem) 5vw; height: 100vh; justify-content: center; }
+          .process-inner { padding: clamp(4rem, 8vh, 6rem) 5vw; height: 100vh; justify-content: center; }
         }
 
         .process-header { display: flex; flex-direction: column; gap: 0.75rem; max-width: 720px; }
@@ -222,7 +222,7 @@ export default function Process() {
           transition: border-color .4s, opacity .4s, background .4s; will-change: transform, opacity;
         }
         .process-card.is-active { border-color: var(--accent); background: var(--surface3); }
-        .process-card.is-active .process-card__num { color: var(--accent); text-shadow: 0 0 30px rgba(200,245,66,0.4); }
+        .process-card.is-active .process-card__num { color: var(--bt-cyan); text-shadow: 0 0 30px rgba(0,217,255,0.4); }
         .process-card.is-past { opacity: 0.4; }
         .process-card__num {
           font-family: var(--font-display); font-weight: 800;
@@ -231,7 +231,7 @@ export default function Process() {
         }
         .process-card__title { font-family: var(--font-display); font-weight: 800; font-size: 1.4rem; line-height: 1.1; color: var(--white); letter-spacing: -0.01em; }
         .process-card__desc  { font-family: var(--font-body); font-weight: 300; font-size: 0.92rem; line-height: 1.55; color: var(--muted); }
-        .process-card__tick  { position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .6s; }
+        .process-card__tick  { position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: var(--bt-gradient); transform: scaleX(0); transform-origin: left; transition: transform .6s; }
         .process-card.is-active .process-card__tick { transform: scaleX(1); }
 
         /* ── Mobile timeline ── */
@@ -257,7 +257,7 @@ export default function Process() {
           width: 16px; height: 16px; border-radius: 50%;
           background: var(--surface); border: 2px solid var(--accent);
           flex-shrink: 0; z-index: 1;
-          box-shadow: 0 0 10px rgba(200,245,66,0.3);
+          box-shadow: 0 0 10px rgba(0,217,255,0.3);
         }
         .process-card-mob__body {
           display: flex; flex-direction: column; gap: 0.5rem; flex: 1;
@@ -269,7 +269,7 @@ export default function Process() {
         .process-card-mob__num {
           font-family: var(--font-display); font-weight: 800;
           font-size: 1.8rem; line-height: 1; color: var(--muted);
-          -webkit-text-stroke: 1px rgba(200,245,66,0.2); opacity: 0.6;
+          -webkit-text-stroke: 1px rgba(0,217,255,0.2); opacity: 0.6;
         }
         .process-card-mob__title { font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; color: var(--white); }
         .process-card-mob__desc  { font-family: var(--font-body); font-weight: 300; font-size: 0.875rem; line-height: 1.6; color: var(--muted); }

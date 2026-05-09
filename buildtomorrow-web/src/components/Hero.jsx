@@ -5,8 +5,7 @@ import { useReducedMotion } from '../hooks/useMediaQuery'
 
 const TITLE_TEXT = 'We Build Digital Futures'
 const TYPE_LINES = [
-  'Crafting the digital infrastructure of tomorrow.',
-  'Web · Mobile · AI · Systems · Security',
+  'Web · AI · Systems · Security',
 ]
 
 /* ---------- CSS gradient fallback for low-end mobile ---------- */
@@ -72,14 +71,14 @@ function ParticleField({ heroRef }) {
     const posAttr = new THREE.BufferAttribute(curPos.slice(), 3)
     geo.setAttribute('position', posAttr)
 
-    const mat = new THREE.PointsMaterial({ size: isMobile ? 1.0 : 1.3, color: 0xc8f542, transparent: true, opacity: 0.65, sizeAttenuation: true })
+    const mat = new THREE.PointsMaterial({ size: isMobile ? 1.0 : 1.3, color: 0x00D9FF, transparent: true, opacity: 0.65, sizeAttenuation: true })
     const pts = new THREE.Points(geo, mat)
     scene.add(pts)
 
     const lineGeo    = new THREE.BufferGeometry()
     const lineBuf    = new Float32Array(MAX_LINES * 6)
     lineGeo.setAttribute('position', new THREE.BufferAttribute(lineBuf, 3))
-    const lineSeg    = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: 0xc8f542, transparent: true, opacity: 0.08 }))
+    const lineSeg    = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: 0x087BFF, transparent: true, opacity: 0.08 }))
     scene.add(lineSeg)
     const linePosArr = lineGeo.attributes.position.array
 
@@ -234,24 +233,7 @@ export default function Hero() {
     let typeTO = null, switchTO = null, restartTO = null, blinkIV = null
     const typeStep = () => {
       if (cancelled) return
-      if (charIdx < TYPE_LINES[lineIdx].length) {
-        subEl.textContent = TYPE_LINES[lineIdx].slice(0, ++charIdx) + '|'
-        typeTO = setTimeout(typeStep, 40)
-      } else {
-        subEl.textContent = TYPE_LINES[lineIdx] + '|'
-        if (lineIdx === 0) {
-          switchTO = setTimeout(() => {
-            if (cancelled) return
-            subEl.textContent = TYPE_LINES[lineIdx]; lineIdx++; charIdx = 0
-            restartTO = setTimeout(typeStep, 800)
-          }, 1400)
-        } else {
-          blinkIV = setInterval(() => {
-            if (cancelled) return
-            subEl.textContent = subEl.textContent.endsWith('|') ? subEl.textContent.slice(0,-1) : subEl.textContent+'|'
-          }, 600)
-        }
-      }
+      subEl.textContent = TYPE_LINES[0]
     }
     tl.add(() => typeStep(), '-=0.4')
 
@@ -277,7 +259,7 @@ export default function Hero() {
       {isLowEnd ? <GradientFallback /> : <ParticleField heroRef={heroRef} />}
 
       <div className="hero-content">
-        <p ref={eyebrowRef} className="hero-eyebrow">Cyprus · Digital Excellence</p>
+        <p ref={eyebrowRef} className="hero-eyebrow">CYPRUS · DIGITAL EXCELLENCE</p>
         <h1 ref={titleRef}  className="hero-title"  aria-label={TITLE_TEXT} />
         <p  ref={subRef}    className="hero-sub" />
         <div ref={ctasRef} className="hero-ctas">
@@ -292,11 +274,7 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator — hide on mobile */}
-      <div className={`hero-scroll-ind ${scrolled ? 'is-faded' : ''}`} aria-hidden="true">
-        <span className="hero-scroll-text">Scroll</span>
-        <div className="hero-scroll-line" />
-      </div>
+
 
       <style>{`
         .hero {
@@ -321,80 +299,92 @@ export default function Hero() {
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(ellipse 80% 60% at 50% 60%, rgba(200,245,66,0.06) 0%, transparent 70%),
+            radial-gradient(ellipse 80% 60% at 50% 60%, rgba(0,217,255,0.06) 0%, transparent 70%),
             var(--black);
         }
 
-        /* ── Content ── */
         .hero-content {
           position: relative;
           z-index: 10;
           text-align: center;
           width: 100%;
-          padding: 0 1.25rem 4rem;
+          padding: 0 1.25rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
         }
         @media (min-width: 768px) {
-          .hero-content { max-width: 1000px; padding: 0 2rem 4rem; }
+          .hero-content { 
+            max-width: 1400px; 
+            padding: 60px 2rem 0; 
+          }
         }
 
         /* ── Eyebrow ── */
         .hero-eyebrow {
-          font-size: 10px;
-          letter-spacing: 0.28em;
+          position: relative;
+          z-index: 3;
+          font-size: 11px;
+          letter-spacing: 0.24em;
           text-transform: uppercase;
-          color: #c8f542;
-          margin-bottom: 28px;
+          color: var(--bt-cyan);
           opacity: 0;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 12px;
+          margin-bottom: 32px;
         }
         @media (min-width: 768px) {
-          .hero-eyebrow { font-size: 11px; letter-spacing: 0.32em; margin-bottom: 36px; gap: 16px; }
+          .hero-eyebrow { 
+            font-size: 13px; 
+            letter-spacing: 0.32em; 
+            gap: 16px; 
+            margin-bottom: clamp(2rem, 4vw, 3.5rem); 
+          }
         }
         .hero-eyebrow::before, .hero-eyebrow::after {
-          content: ''; display: block; width: 28px; height: 1px;
-          background: rgba(200,245,66,0.35); flex-shrink: 0;
+          content: ''; display: block; width: 24px; height: 1px;
+          background: var(--bt-gradient-soft); flex-shrink: 0;
+          opacity: 0.55;
         }
         @media (min-width: 768px) {
-          .hero-eyebrow::before, .hero-eyebrow::after { width: 40px; }
+          .hero-eyebrow::before, .hero-eyebrow::after { width: clamp(32px, 4vw, 56px); }
         }
 
-        /* ── Title ── */
         .hero-title {
           font-family: 'Syne', sans-serif;
-          font-size: clamp(2.8rem, 11vw, 4rem);
+          font-size: clamp(3.2rem, 11vw, 5rem);
           font-weight: 800;
-          line-height: 0.95;
+          line-height: 0.86;
           letter-spacing: -0.04em;
           color: var(--white);
-          margin-bottom: 24px;
+          margin-bottom: 28px;
           overflow: visible;
-          min-height: 0.95em;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         @media (min-width: 768px) {
-          .hero-title { font-size: clamp(4rem, 10vw, 9rem); line-height: 0.9; margin-bottom: 36px; }
+          .hero-title { font-size: clamp(5rem, 10vw, 9.5rem); margin-bottom: 32px; }
         }
         .hero-word { display: block; white-space: nowrap; }
         .hero-char  { display: inline-block; opacity: 0; will-change: transform, opacity; }
         .hero-space { display: none; }
-        @media (min-width: 768px) {
-          .hero-word { display: inline-block; }
-          .hero-space { display: inline-block; width: 0.28em; }
-        }
         /* ── Sub ── */
         .hero-sub {
           font-size: 0.9rem;
-          color: rgba(240,237,232,0.38);
-          font-weight: 300;
+          color: var(--bt-muted);
+          font-weight: 400;
           margin-bottom: 36px;
-          min-height: 1.5em;
-          letter-spacing: 0.02em;
+          min-height: 1.2em;
+          letter-spacing: 0.05em;
           max-width: 100%;
+          text-align: center;
         }
         @media (min-width: 768px) {
-          .hero-sub { font-size: clamp(15px, 1.8vw, 20px); margin-bottom: 52px; max-width: 600px; margin-inline: auto; }
+          .hero-sub { font-size: clamp(14px, 1.2vw, 18px); margin-bottom: 48px; }
         }
 
         /* ── CTAs ── */
@@ -417,8 +407,8 @@ export default function Hero() {
           font-size: 13px;
           letter-spacing: 0.1em;
           text-transform: uppercase;
-          color: #08080a;
-          background: #c8f542;
+          color: var(--bt-black);
+          background: var(--bt-gradient);
           padding: 17px 44px;
           border: none;
           border-radius: 2px;
@@ -439,13 +429,13 @@ export default function Hero() {
         .hero-btn-primary:hover::before { opacity: 1; }
         .hero-btn-glow {
           position: absolute; inset: -6px; border-radius: 4px;
-          border: 1px solid rgba(200,245,66,0);
+          border: 1px solid rgba(0,217,255,0);
           animation: heroBtnPulse 2.5s ease-in-out infinite;
           pointer-events: none;
         }
         @keyframes heroBtnPulse {
-          0%,100% { inset: -6px; border-color: rgba(200,245,66,0); }
-          50%     { inset: -12px; border-color: rgba(200,245,66,0.35); }
+          0%,100% { inset: -6px; border-color: rgba(0,217,255,0); }
+          50%     { inset: -12px; border-color: rgba(0,217,255,0.32); }
         }
 
         /* Secondary button */
@@ -458,7 +448,7 @@ export default function Hero() {
           color: var(--white);
           background: transparent;
           padding: 17px 44px;
-          border: 1px solid rgba(240,237,232,0.18);
+          border: 1px solid rgba(244,247,251,0.18);
           border-radius: 2px;
           font-weight: 300;
           overflow: hidden;
@@ -469,41 +459,15 @@ export default function Hero() {
         @media (min-width: 600px) {
           .hero-btn-secondary { width: auto; }
         }
-        .hero-btn-secondary:hover { border-color: #f5e942; color: #f5e942; }
+        .hero-btn-secondary:hover { border-color: var(--bt-green); color: var(--bt-green); }
         .hero-btn-liquid {
           position: absolute; border-radius: 50%;
-          background: rgba(66,245,176,0.12);
+          background: rgba(0,227,154,0.12);
           transform: scale(0); transition: transform 0.7s ease, opacity 0.7s ease;
           pointer-events: none;
         }
 
-        /* ── Scroll indicator — hidden on mobile ── */
-        .hero-scroll-ind {
-          display: none;
-        }
-        @media (min-width: 768px) {
-          .hero-scroll-ind {
-            display: flex;
-            position: absolute; bottom: 36px; left: 50%;
-            transform: translateX(-50%);
-            flex-direction: column; align-items: center; gap: 10px;
-            z-index: 10; opacity: 1; transition: opacity 0.4s ease;
-          }
-          .hero-scroll-ind.is-faded { opacity: 0; }
-        }
-        .hero-scroll-text {
-          font-size: 9px; letter-spacing: 0.32em; text-transform: uppercase;
-          color: rgba(240,237,232,0.38); writing-mode: vertical-lr; transform: rotate(180deg);
-        }
-        .hero-scroll-line {
-          width: 1px; height: 56px;
-          background: linear-gradient(to bottom, rgba(200,245,66,0.7), transparent);
-          animation: heroIndPulse 2s ease-in-out infinite;
-        }
-        @keyframes heroIndPulse {
-          0%,100% { transform: scaleY(0.6); transform-origin: top; opacity: 0.4; }
-          50%     { transform: scaleY(1); opacity: 1; }
-        }
+
       `}</style>
     </section>
   )

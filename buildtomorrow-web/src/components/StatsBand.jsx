@@ -93,10 +93,10 @@ export default function StatsBand() {
 
       <style>{`
         .sb-section {
-          position: relative; width: 100vw; min-height: 100vh;
+          position: relative; width: 100vw; min-height: 72vh;
           background: var(--surface);
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          padding: clamp(4rem, 10vh, 8rem) 0;
+          padding: clamp(3.5rem, 8vh, 6rem) 0;
           overflow: hidden;
           border-top: 1px solid var(--dim); border-bottom: 1px solid var(--dim);
         }
@@ -118,7 +118,7 @@ export default function StatsBand() {
 
         .sb-line {
           position:absolute; top:0; left:0; right:0; height:1px;
-          background:var(--accent); transform:scaleX(0); transform-origin:left; z-index:2; opacity:0.6;
+          background:var(--bt-gradient); transform:scaleX(0); transform-origin:left; z-index:2; opacity:0.65;
         }
 
         /* ── Grid: 2×2 on mobile, 4-col on desktop ── */
@@ -159,7 +159,7 @@ export default function StatsBand() {
           .sb-block:nth-child(1),
           .sb-block:nth-child(2)  { border-bottom: none; }
         }
-        .sb-block:hover { background: rgba(200,245,66,0.02); }
+        .sb-block:hover { background: rgba(0,217,255,0.025); }
 
         /* ── Number ── */
         .sb-num {

@@ -26,10 +26,10 @@ export default function Marquee() {
         .marquee {
           position: relative;
           width: 100vw;
-          padding: 0.9rem 0;
-          background: var(--surface);
-          border-top: 1px solid var(--dim);
-          border-bottom: 1px solid var(--dim);
+          padding: 0.6rem 0;
+          background: var(--bt-dark);
+          border-top: 1px solid rgba(255,255,255,0.03);
+          border-bottom: 1px solid rgba(255,255,255,0.03);
           overflow: hidden;
           display: flex;
           flex-wrap: nowrap;
@@ -38,44 +38,45 @@ export default function Marquee() {
           display: flex;
           flex: 0 0 auto;
           align-items: center;
-          gap: 2rem;
-          padding-right: 2rem;
+          gap: 2.5rem;
+          padding-right: 2.5rem;
           white-space: nowrap;
-          animation: marquee-slide 16s linear infinite;
+          animation: marquee-slide 20s linear infinite;
           will-change: transform;
         }
         @media (min-width: 768px) {
-          .marquee__row { gap: 3rem; padding-right: 3rem; animation-duration: 22s; }
-          .marquee { padding: 1.2rem 0; }
+          .marquee__row { gap: 4rem; padding-right: 4rem; animation-duration: 28s; }
+          .marquee { padding: 0.8rem 0; }
         }
         .marquee:hover .marquee__row { animation-play-state: paused; }
         .marquee:hover .marquee__text { color: var(--white); }
         .marquee__item {
           display: inline-flex;
           align-items: center;
-          gap: 2rem;
+          gap: 2.5rem;
           flex-shrink: 0;
         }
         @media (min-width: 768px) {
-          .marquee__item { gap: 3rem; }
+          .marquee__item { gap: 4rem; }
         }
         .marquee__text {
           font-family: var(--font-display);
           font-weight: 700;
-          font-size: 0.6rem;
-          letter-spacing: 0.2em;
+          font-size: 0.55rem;
+          letter-spacing: 0.22em;
           text-transform: uppercase;
-          color: var(--muted);
+          color: rgba(244,247,251,0.35);
           transition: color 0.4s var(--ease-out-expo);
         }
         @media (min-width: 768px) {
-          .marquee__text { font-size: 0.7rem; }
+          .marquee__text { font-size: 0.62rem; }
         }
         .marquee__dot {
           display: inline-block;
-          width: 4px; height: 4px;
+          width: 3px; height: 3px;
           border-radius: 50%;
-          background: var(--accent);
+          background: var(--bt-cyan);
+          opacity: 0.4;
           flex-shrink: 0;
         }
       `}</style>

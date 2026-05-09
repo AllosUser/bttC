@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { useGSAP } from '../hooks/useGSAP'
 import { useReducedMotion } from '../hooks/useMediaQuery'
 
-const HEADLINE_TEXT  = 'Ready to build your next chapter?'
+const HEADLINE_TEXT  = 'Ready to build something that lasts?'
 const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%'
 
 function scrambleText(element, finalText, isMobile) {
@@ -153,8 +153,7 @@ export default function CTA() {
         <span className="section-label">Let's Talk</span>
         <h2 ref={headlineRef} className="cta-headline" aria-label={HEADLINE_TEXT} />
         <p className="cta-sub">
-          Tell us where you want to go. We'll show you how to get there — with software
-          that performs, scales, and lasts.
+          Tell us where you want to go. We'll design the software, systems, and infrastructure to get you there.
         </p>
 
         <form onSubmit={handleSubmit} className="cta-form" noValidate>
@@ -173,58 +172,59 @@ export default function CTA() {
 
         <div className="cta-meta">
           <span>or email us directly</span>
-          <a href="mailto:hello@buildtomorrow.io" className="cta-meta__link">
-            hello@buildtomorrow.io
+          <a href="mailto:hello@buildtomorrow.today" className="cta-meta__link">
+            hello@buildtomorrow.today
           </a>
         </div>
       </div>
 
       <style>{`
         .cta-section {
-          position: relative; width: 100vw; min-height: 100vh;
+          position: relative; width: 100vw; min-height: 78vh;
           display: flex; align-items: center; justify-content: center;
           padding: 4rem 1.25rem; overflow: hidden; background: var(--surface2);
         }
         @media (min-width: 768px) {
-          .cta-section { padding: clamp(6rem,14vh,10rem) 5vw; }
+          .cta-section { min-height: 82vh; padding: clamp(5rem,10vh,7rem) 5vw; }
         }
 
         .cta-bg {
           position: absolute; inset: 0; z-index: 1;
           background:
-            radial-gradient(ellipse at var(--c1x) var(--c1y), rgba(200,245,66,0.06) 0%, transparent 60%),
-            radial-gradient(ellipse at var(--c2x) var(--c2y), rgba(66,245,176,0.04) 0%, transparent 50%),
+            radial-gradient(ellipse at var(--c1x) var(--c1y), rgba(0,217,255,0.055) 0%, transparent 58%),
+            radial-gradient(ellipse at var(--c2x) var(--c2y), rgba(8,123,255,0.045) 0%, transparent 52%),
+            linear-gradient(180deg, #050713 0%, #0B1024 100%),
             var(--surface2);
           animation: breathe 8s ease-in-out infinite alternate;
         }
         @media (max-width: 767px) {
-          .cta-bg { animation: none; background: var(--surface2); }
+          .cta-bg { animation: none; background: linear-gradient(180deg, #050713 0%, #0B1024 100%); }
         }
 
         .cta-inner {
           position: relative; z-index: 2;
-          max-width: 900px; width: 100%;
-          display: flex; flex-direction: column; align-items: flex-start; gap: 1.25rem;
+          max-width: 760px; width: 100%;
+          display: flex; flex-direction: column; align-items: flex-start; gap: 1rem;
         }
 
         .cta-headline {
           font-family: var(--font-display); font-weight: 800;
-          font-size: clamp(2.5rem, 9vw, 3.5rem);
+          font-size: clamp(2.1rem, 7.5vw, 3rem);
           line-height: 1.05; letter-spacing: -0.02em;
           color: var(--white); min-height: 1.05em; word-break: break-word;
         }
         @media (min-width: 768px) {
-          .cta-headline { font-size: clamp(2.4rem, 5.5vw, 4.8rem); }
+          .cta-headline { font-size: clamp(2.35rem, 4.2vw, 3.65rem); }
         }
 
         .cta-sub {
           font-family: var(--font-body); font-weight: 300;
-          font-size: 0.95rem; line-height: 1.6; color: var(--muted); max-width: 560px;
+          font-size: 0.95rem; line-height: 1.6; color: var(--muted); max-width: 620px;
         }
         @media (min-width: 768px) { .cta-sub { font-size: 1.05rem; } }
 
         .cta-form {
-          display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; width: 100%;
+          display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; width: 100%;
         }
         @media (min-width: 600px) {
           .cta-form { flex-direction: row; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; }
@@ -236,33 +236,33 @@ export default function CTA() {
         .cta-input {
           width: 100%; font-family: var(--font-body); font-weight: 300;
           font-size: 1rem; color: var(--white); background: transparent;
-          border: none; border-bottom: 1px solid var(--dim);
+          border: none; border-bottom: 1px solid rgba(0, 217, 255, 0.24);
           padding: 0.75rem 0; transition: border-color .3s, box-shadow .3s; min-height: 48px;
         }
         @media (min-width: 768px) { .cta-input { font-size: 1.1rem; } }
         .cta-input::placeholder { color: var(--muted); }
         .cta-input-wrap.is-focused .cta-input {
-          border-bottom-color: var(--accent); box-shadow: 0 1px 0 0 var(--accent);
+          border-bottom-color: var(--bt-cyan); box-shadow: 0 1px 0 0 var(--bt-cyan);
         }
 
         .cta-submit {
           font-family: var(--font-display); font-weight: 700;
           font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase;
-          padding: 0.95rem 2.4rem; background: var(--accent); color: var(--black); border: none;
+          padding: 0.9rem 2.2rem; background: var(--bt-gradient); color: var(--bt-black); border: none;
           transition: transform .4s var(--ease-out-back), box-shadow .4s;
           position: relative; overflow: hidden; width: 100%; min-height: 52px;
         }
         @media (min-width: 600px) { .cta-submit { width: auto; } }
-        .cta-submit:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(200,245,66,0.25); }
+        .cta-submit:hover { transform: translateY(-3px); box-shadow: 0 18px 54px rgba(0,217,255,0.20); }
 
         .cta-meta {
           display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;
-          margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--dim);
+          margin-top: 1rem; padding-top: 1.15rem; border-top: 1px solid rgba(0, 217, 255, 0.18);
           font-family: var(--font-body); font-weight: 300; font-size: 0.88rem;
           color: var(--muted); width: 100%;
         }
         .cta-meta__link {
-          color: var(--accent); font-weight: 400; border-bottom: 1px solid transparent;
+          color: var(--bt-cyan); font-weight: 400; border-bottom: 1px solid transparent;
           transition: border-color .3s; min-height: 44px; display: inline-flex; align-items: center;
         }
         .cta-meta__link:hover { border-bottom-color: var(--accent); }

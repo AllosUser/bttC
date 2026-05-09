@@ -223,8 +223,8 @@ export default function About() {
           </div>
 
           <div className="about-right">
-            <p>We are a Cyprus-based studio building products at the intersection of engineering rigor and design ambition. Our work spans web, mobile, artificial intelligence, and complex systems for companies that refuse the average.</p>
-            <p>Every line of code is written with intent. With deep regulatory awareness, we don't just ship products — we build the secure infrastructure of tomorrow, one precise decision at a time.</p>
+            <p>We are a Cyprus-based technology studio building secure digital infrastructure for companies that refuse the average. Our work spans web platforms, mobile ecosystems, applied AI, and complex systems — combining engineering rigor, design clarity, and regulatory awareness.</p>
+            <p>We don’t just build products. We design systems that remain stable under pressure.</p>
 
             <div className="stats-row">
               {reduced ? (
@@ -249,7 +249,7 @@ export default function About() {
         .about {
           position: relative;
           width: 100vw;
-          padding: clamp(5rem, 12vh, 14rem) 0;
+          padding: clamp(4.5rem, 10vh, 10rem) 0;
           background: var(--black);
           overflow: hidden;
         }
@@ -309,9 +309,15 @@ export default function About() {
         }
         .about-headline__word-wrap { display: inline-block; overflow: hidden; padding-bottom: 0.05em; }
         .about-headline__word { display: inline-block; will-change: transform; }
-        .about-headline__word em { font-style: normal; color: var(--accent); }
+        .about-headline__word em {
+          font-style: normal;
+          background: var(--bt-gradient);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
 
-        .draw-line { width: 100%; height: 1px; background: var(--dim); transform-origin: left; transform: scaleX(0); }
+        .draw-line { width: 100%; height: 1px; background: var(--bt-gradient-soft); opacity: 0.65; transform-origin: left; transform: scaleX(0); }
 
         .about-right {
           display: flex; flex-direction: column; gap: 1.25rem;

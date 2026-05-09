@@ -28,10 +28,12 @@ float noise(vec2 p){
 void main(){
   vec2 uv=gl_FragCoord.xy/uRes; float t=uTime*0.18;
   float n=noise(uv*3.0+t)*0.5+noise(uv*6.0-t*1.3)*0.25+noise(uv*12.0+t*0.7)*0.125;
-  float scanline=sin(uv.y*uRes.y*0.5)*0.04;
-  float ca=sin(uTime*0.3+uv.x*10.0)*0.008;
-  vec3 col=vec3(0.04+n*0.08+scanline+ca);
-  col+=vec3(0.0,0.02,0.0)*n; col.rg+=vec2(0.02,0.06)*n*0.5;
+  float scanline=sin(uv.y*uRes.y*0.5)*0.012;
+  float ca=sin(uTime*0.3+uv.x*10.0)*0.004;
+  vec3 base=vec3(0.020,0.027,0.075);
+  vec3 haze=vec3(0.000,0.110,0.160)*(n*0.10);
+  vec3 col=base+haze+vec3(scanline+ca);
+  col+=vec3(0.000,0.030,0.070)*smoothstep(0.85,0.20,distance(uv,vec2(0.5,0.22)))*0.35;
   gl_FragColor=vec4(col,1.0);
 }
 `
@@ -180,7 +182,7 @@ export default function VideoStrip() {
         <span
           key={idx}
           className="reveal-word"
-          style={line.accent ? { color: 'var(--accent)' } : undefined}
+          data-accent={line.accent ? 'true' : undefined}
         >
           {word}
         </span>
@@ -194,7 +196,7 @@ export default function VideoStrip() {
   })
 
   return (
-    <section ref={sectionRef} className="vs-section" aria-label="Mission statement">
+    <section id="work" ref={sectionRef} className="vs-section" aria-label="Mission statement">
       {/* Desktop: WebGL canvas. Mobile: CSS scanlines */}
       {isMobile ? <ScanlineBg /> : <canvas ref={canvasRef} className="vs-canvas" aria-hidden="true" />}
       <div className="vs-overlay" aria-hidden="true" />
@@ -214,9 +216,11 @@ export default function VideoStrip() {
         .vs-section {
           position: relative;
           height: 100vh;
-          background: var(--surface);
-          border-top: 1px solid var(--dim);
-          border-bottom: 1px solid var(--dim);
+          background:
+            radial-gradient(circle at 50% 20%, rgba(0, 217, 255, 0.08), transparent 35%),
+            linear-gradient(180deg, #050713 0%, #0B1024 100%);
+          border-top: 1px solid rgba(0, 217, 255, 0.16);
+          border-bottom: 1px solid rgba(0, 217, 255, 0.16);
           overflow: hidden;
         }
 
@@ -234,15 +238,19 @@ export default function VideoStrip() {
             repeating-linear-gradient(
               0deg,
               transparent 0px, transparent 2px,
-              rgba(0,0,0,0.3) 2px, rgba(0,0,0,0.3) 3px
+              rgba(0,217,255,0.035) 2px, rgba(0,217,255,0.035) 3px
             ),
-            radial-gradient(ellipse 80% 60% at 50% 50%, rgba(200,245,66,0.04) 0%, transparent 70%),
-            var(--surface);
+            radial-gradient(circle at 50% 20%, rgba(0, 217, 255, 0.08), transparent 35%),
+            linear-gradient(180deg, #050713 0%, #0B1024 100%);
+          opacity: 0.9;
         }
 
         .vs-overlay {
           position: absolute; inset: 0; z-index: 2;
-          background: radial-gradient(ellipse at center, transparent 30%, rgba(8,8,10,0.65) 100%);
+          background:
+            repeating-linear-gradient(0deg, rgba(0, 217, 255, 0.025) 0px, rgba(0, 217, 255, 0.025) 1px, transparent 1px, transparent 10px),
+            radial-gradient(ellipse at center, transparent 30%, rgba(3,4,11,0.72) 100%);
+          opacity: 0.48;
           pointer-events: none;
         }
 
@@ -286,6 +294,12 @@ export default function VideoStrip() {
           opacity: 0;
           filter: blur(8px);
           will-change: opacity, filter;
+        }
+        .reveal-word[data-accent="true"] {
+          background: var(--bt-gradient);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
         }
         .reveal-word:last-child { margin-right: 0; }
 
