@@ -66,6 +66,8 @@ function ParticleField({ heroRef }) {
     const aOpac    = new Float32Array(COUNT)
     const colorMix = new Float32Array(COUNT)
     const seedN    = new Float32Array(COUNT)
+    const driftR   = new Float32Array(COUNT)  // per-particle drift radius (world units)
+    const driftS   = new Float32Array(COUNT)  // per-particle drift speed  (rad/s)
 
     function distribute() {
       const w = viewW * 1.18, h = viewH * 1.18
@@ -79,6 +81,8 @@ function ParticleField({ heroRef }) {
         aOpac[i]  = 0.35 + Math.random() * 0.40
         colorMix[i] = Math.random() < 0.30 ? 1 : 0
         seedN[i]  = Math.random() * 1000
+        driftR[i] = 15 + Math.random() * 30   // 15–45 world units  (~22–67 px at 1080p)
+        driftS[i] = 0.10 + Math.random() * 0.22  // 0.10–0.32 rad/s  (≈ 20–63 s per cycle)
       }
     }
     distribute()
@@ -330,10 +334,13 @@ function ParticleField({ heroRef }) {
         const ix = i*3, iy = i*3+1
         const hx = home[i*2], hy = home[i*2+1]
 
-        // Gentle noise drift toward home
-        const tt = timeAccum * 0.3 + seedN[i]
-        const dxn = Math.cos(tt) * 4         + Math.cos(tt * 1.7 + i) * 1.5
-        const dyn = Math.sin(tt * 0.9) * 4   + Math.sin(tt * 1.3 + i * 0.5) * 1.5
+        // Organic idle drift — two incommensurable frequencies produce a slow,
+        // non-repeating lissajous orbit unique to each particle
+        const tt  = timeAccum * driftS[i] + seedN[i]
+        const dxn = Math.sin(tt)               * driftR[i] * 0.80
+                  + Math.sin(tt * 1.618 + 1.1) * driftR[i] * 0.35
+        const dyn = Math.cos(tt * 0.73)        * driftR[i]
+                  + Math.cos(tt * 1.30  + 2.4) * driftR[i] * 0.30
 
         vel[i*2]   += (hx + dxn - arr[ix]) * SPRING
         vel[i*2+1] += (hy + dyn - arr[iy]) * SPRING
@@ -588,6 +595,7 @@ export default function Hero() {
         .hero-canvas {
           position: absolute;
           inset: 0;
+          z-index: 0;
           width: 100% !important;
           height: 100% !important;
           pointer-events: none;
@@ -596,6 +604,7 @@ export default function Hero() {
         .hero-gradient-bg {
           position: absolute;
           inset: 0;
+          z-index: 0;
           background:
             radial-gradient(ellipse 80% 60% at 50% 60%, rgba(0,217,255,0.06) 0%, transparent 70%),
             var(--black);
@@ -611,6 +620,9 @@ export default function Hero() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
         }
         @media (min-width: 768px) {
           .hero-content {
@@ -722,6 +734,7 @@ export default function Hero() {
           width: 100%;
           min-height: 52px;
           cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
         }
         @media (min-width: 600px) {
           .hero-btn-primary { width: auto; }
@@ -761,6 +774,7 @@ export default function Hero() {
           width: 100%;
           min-height: 52px;
           cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
         }
         @media (min-width: 600px) {
           .hero-btn-secondary { width: auto; }

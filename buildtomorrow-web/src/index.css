@@ -83,6 +83,16 @@ a, button, input, textarea, select {
   outline: none;
 }
 
+/* Prevent text selection / tap highlight on all interactive elements */
+a, button {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 a { text-decoration: none; }
 
 ::selection {

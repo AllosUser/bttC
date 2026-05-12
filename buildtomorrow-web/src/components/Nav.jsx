@@ -231,6 +231,10 @@ export default function Nav() {
           letter-spacing: 0.02em;
           color: var(--white);
           padding: 0.4rem 0;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
         }
         .nav-link-inner {
           position: relative;
@@ -275,6 +279,9 @@ export default function Nav() {
             overflow: hidden;
             position: relative;
             transition: color 0.35s var(--ease-in-out);
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
           }
           .bt-nav__cta > span { position: relative; z-index: 1; }
           .bt-nav__cta::before {
@@ -302,6 +309,9 @@ export default function Nav() {
           border: none;
           padding: 0 10px;
           flex-shrink: 0;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
         }
         @media (min-width: 1024px) {
           .bt-hamburger { display: none; }
@@ -340,6 +350,9 @@ export default function Nav() {
           font-size: 1rem;
           flex-shrink: 0;
           margin-bottom: 3rem;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-tap-highlight-color: transparent;
         }
         .mob-nav {
           display: flex;
@@ -358,6 +371,10 @@ export default function Nav() {
           display: block;
           border-bottom: 1px solid var(--dim);
           transition: color 0.25s;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
         }
         .mob-link:hover { color: var(--accent); }
         .mob-cta {
@@ -374,6 +391,10 @@ export default function Nav() {
           letter-spacing: 0.15em;
           text-transform: uppercase;
           min-height: 48px;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
         }
       `}</style>
     </>
