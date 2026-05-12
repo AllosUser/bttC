@@ -184,102 +184,119 @@ export default function Services() {
     if (!n) return
     const EASE = 'expo.out'
 
-    // Stack all cards on top of each other via absolute positioning
-    // First card visible, rest hidden
     cards.forEach((card, i) => {
       gsap.set(card, {
-        position: 'absolute',
-        top: 0, left: 0, width: '100%',
+        position: 'absolute', top: 0, left: 0, width: '100%',
         opacity: i === 0 ? 1 : 0,
         y: i === 0 ? 0 : 40,
       })
-
       const counter = card.querySelector('.svc-counter')
-      const tag = card.querySelector('.svc-tag')
-      const icon = card.querySelector('.svc-icon')
-      const titleWords = card.querySelectorAll('.svc-title-word')
-      const desc = card.querySelector('.svc-p')
-      const keywords = card.querySelector('.svc-keywords')
-
+      const tag     = card.querySelector('.svc-tag')
+      const icon    = card.querySelector('.svc-icon')
+      const words   = card.querySelectorAll('.svc-title-word')
+      const desc    = card.querySelector('.svc-p')
+      const kws     = card.querySelector('.svc-keywords')
       if (counter) gsap.set(counter, { opacity: 0, y: 10 })
-      if (tag) gsap.set(tag, { opacity: 0, y: 16 })
-      if (icon) gsap.set(icon, { opacity: 0, scale: 0.5, y: 10 })
-      if (titleWords.length) gsap.set(titleWords, { yPercent: 100 })
-      if (desc) gsap.set(desc, { opacity: 0, y: 20 })
-      if (keywords) gsap.set(keywords, { opacity: 0, y: 14 })
+      if (tag)     gsap.set(tag,     { opacity: 0, y: 16 })
+      if (icon)    gsap.set(icon,    { opacity: 0, scale: 0.5, y: 10 })
+      if (words.length) gsap.set(words, { yPercent: 100 })
+      if (desc)    gsap.set(desc,    { opacity: 0, y: 20 })
+      if (kws)     gsap.set(kws,     { opacity: 0, y: 14 })
     })
 
-    const revealCard = (card) => {
+    function revealCard(card) {
+      const tl      = gsap.timeline()
       const counter = card.querySelector('.svc-counter')
-      const tag = card.querySelector('.svc-tag')
-      const icon = card.querySelector('.svc-icon')
-      const titleWords = card.querySelectorAll('.svc-title-word')
-      const desc = card.querySelector('.svc-p')
-      const keywords = card.querySelector('.svc-keywords')
-      const tl = gsap.timeline()
+      const tag     = card.querySelector('.svc-tag')
+      const icon    = card.querySelector('.svc-icon')
+      const words   = card.querySelectorAll('.svc-title-word')
+      const desc    = card.querySelector('.svc-p')
+      const kws     = card.querySelector('.svc-keywords')
       tl.to(card, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0)
       if (counter) tl.to(counter, { opacity: 1, y: 0, duration: 0.4, ease: EASE }, 0)
-      if (tag) tl.to(tag, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.05)
-      if (icon) tl.to(icon, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: EASE }, 0.1)
-      if (titleWords.length) tl.to(titleWords, { yPercent: 0, duration: 0.6, ease: EASE, stagger: 0.06 }, 0.1)
-      if (desc) tl.to(desc, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.3)
-      if (keywords) tl.to(keywords, { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.4)
+      if (tag)     tl.to(tag,     { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.05)
+      if (icon)    tl.to(icon,    { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: EASE }, 0.1)
+      if (words.length) tl.to(words, { yPercent: 0, duration: 0.6, ease: EASE, stagger: 0.06 }, 0.1)
+      if (desc)    tl.to(desc,    { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.3)
+      if (kws)     tl.to(kws,     { opacity: 1, y: 0, duration: 0.5, ease: EASE }, 0.4)
       return tl
     }
 
-    const hideCard = (card) => {
-      const tl = gsap.timeline()
-      tl.to(card, { opacity: 0, y: -30, duration: 0.35, ease: 'power2.in' })
-      return tl
+    // dir > 0 = forward (old card exits up, new card enters from below)
+    // dir < 0 = backward (old card exits down, new card enters from above)
+    function hideCard(card, dir) {
+      return gsap.timeline().to(card, {
+        opacity: 0, y: dir > 0 ? -30 : 30,
+        duration: 0.35, ease: 'power2.in',
+      })
+    }
+
+    function resetCard(card, dir) {
+      gsap.set(card, { opacity: 0, y: dir > 0 ? 40 : -40 })
+      const counter = card.querySelector('.svc-counter')
+      const tag     = card.querySelector('.svc-tag')
+      const icon    = card.querySelector('.svc-icon')
+      const words   = card.querySelectorAll('.svc-title-word')
+      const desc    = card.querySelector('.svc-p')
+      const kws     = card.querySelector('.svc-keywords')
+      if (counter) gsap.set(counter, { opacity: 0, y: 10 })
+      if (tag)     gsap.set(tag,     { opacity: 0, y: 16 })
+      if (icon)    gsap.set(icon,    { opacity: 0, scale: 0.5, y: 10 })
+      if (words.length) gsap.set(words, { yPercent: 100 })
+      if (desc)    gsap.set(desc,    { opacity: 0, y: 20 })
+      if (kws)     gsap.set(kws,     { opacity: 0, y: 14 })
     }
 
     let currentIdx = 0
+    let activeTl   = null
+    let lastP      = 0
+    // Dead zone around each threshold — prevents index bouncing when
+    // scroll progress hovers near a boundary (advance only when clearly past
+    // it, retreat only when clearly below it).
+    const HYSTERESIS = 0.02
 
-    /*
-     * Pin the section. Scroll distance = n panels × 150vh.
-     * As user scrolls, cross-fade between cards.
-     */
     ScrollTrigger.create({
       trigger: section,
       start: 'top top',
-      end: `+=${n * 360}vh`,
+      // One full viewport height of pinned scroll per service — explicit pixels
+      // so the distance stays proportional regardless of how GSAP resolves units.
+      end: () => `+=${n * window.innerHeight}`,
       pin: true,
       pinSpacing: true,
-      scrub: 1.2,
+      scrub: 0.6,           // down from 1.2 — less catch-up lag, fewer rapid onUpdate calls
       invalidateOnRefresh: true,
       onEnter() {
-        // Reveal first card when section enters
         revealCard(cards[0])
         setActivePanel(1)
       },
       onUpdate(self) {
-        const p = self.progress
-        const targetIdx = Math.min(Math.floor(p * n * 1.02), n - 1)
+        const p   = self.progress
+        const fwd = p >= lastP
+        lastP = p
 
-        if (targetIdx !== currentIdx) {
-          // Hide current card
-          hideCard(cards[currentIdx])
-          // Reset inner elements of new card
-          const newCard = cards[targetIdx]
-          gsap.set(newCard, { opacity: 0, y: 40 })
-          const counter = newCard.querySelector('.svc-counter')
-          const tag = newCard.querySelector('.svc-tag')
-          const icon = newCard.querySelector('.svc-icon')
-          const titleWords = newCard.querySelectorAll('.svc-title-word')
-          const desc = newCard.querySelector('.svc-p')
-          const keywords = newCard.querySelector('.svc-keywords')
-          if (counter) gsap.set(counter, { opacity: 0, y: 10 })
-          if (tag) gsap.set(tag, { opacity: 0, y: 16 })
-          if (icon) gsap.set(icon, { opacity: 0, scale: 0.5, y: 10 })
-          if (titleWords.length) gsap.set(titleWords, { yPercent: 100 })
-          if (desc) gsap.set(desc, { opacity: 0, y: 20 })
-          if (keywords) gsap.set(keywords, { opacity: 0, y: 14 })
+        // Equal-width zones: service i occupies [(i)/n, (i+1)/n].
+        // Apply hysteresis so crossing a threshold in the forward direction
+        // requires p to be 2% past it, and retreating requires p to be 2% below.
+        const fwdThresh = (currentIdx + 1) / n + HYSTERESIS
+        const bwdThresh =  currentIdx      / n - HYSTERESIS
 
-          // Reveal new card
-          revealCard(newCard)
-          currentIdx = targetIdx
-          setActivePanel(targetIdx + 1)
-        }
+        let nextIdx = currentIdx
+        if (fwd  && currentIdx < n - 1 && p >= fwdThresh) nextIdx = currentIdx + 1
+        if (!fwd && currentIdx > 0     && p <= bwdThresh) nextIdx = currentIdx - 1
+
+        if (nextIdx === currentIdx) return
+
+        const dir = nextIdx > currentIdx ? 1 : -1
+
+        // Kill any in-flight reveal so the previous intermediate card
+        // doesn't linger in a half-revealed state.
+        if (activeTl) { activeTl.kill(); activeTl = null }
+
+        hideCard(cards[currentIdx], dir)
+        resetCard(cards[nextIdx], dir)
+        activeTl = revealCard(cards[nextIdx])
+        currentIdx = nextIdx
+        setActivePanel(nextIdx + 1)
       },
     })
   }, [isMobile], sectionRef)
@@ -399,6 +416,9 @@ export default function Services() {
             font-size: clamp(160px, 24vw, 320px);
             right: 4vw; top: 50%; transform: translateY(-50%); opacity: 1;
           }
+        }
+        @media (max-width: 1023px) {
+          .svc-num { display: none; }
         }
 
         /* ── Badge ── */

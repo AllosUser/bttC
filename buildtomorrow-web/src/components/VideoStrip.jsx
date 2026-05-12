@@ -120,14 +120,37 @@ export default function VideoStrip() {
       return
     }
 
-    /*
-     * PIN the section in place for an extra scroll distance.
-     * "+=150%" means the user scrolls 1.5× the viewport height
-     * while the section stays fixed — giving plenty of room
-     * for the word reveal without any empty background gap.
-     */
     const pinDistance = mobile ? '+=120%' : '+=150%'
 
+    // Pre-pin: section scrolls in from below. Fade words from CSS base → floor
+    // so there is no empty scanline background before the pin locks in.
+    const preMax      = mobile ? 0.28 : 0.22
+    const wordCssBase = mobile ? 0.15 : 0.10
+    const eyeCssBase  = mobile ? 0.08 : 0.06
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top bottom',  // section first enters viewport
+      end:   'top top',     // section fills viewport / pin starts
+      scrub: true,
+      onUpdate(self) {
+        const pp          = self.progress
+        const blurStart   = mobile ? 6 : 8
+        const blurEnd     = mobile ? 4 : 5
+
+        section.querySelectorAll('.reveal-word').forEach(w => {
+          w.style.opacity = Math.max(wordCssBase, pp * preMax)
+          w.style.filter  = `blur(${blurStart - pp * (blurStart - blurEnd)}px)`
+        })
+
+        const eyebrow = section.querySelector('.vs-eyebrow')
+        if (eyebrow) {
+          eyebrow.style.opacity = Math.max(eyeCssBase, pp * (mobile ? 0.20 : 0.14))
+        }
+      },
+    })
+
+    // Main pin: section fixed while words reveal word-by-word
     ScrollTrigger.create({
       trigger: section,
       start: 'top top',
@@ -137,35 +160,40 @@ export default function VideoStrip() {
       scrub: mobile ? 0.4 : 0.8,
       invalidateOnRefresh: true,
       onUpdate(self) {
-        const p = self.progress   // 0 → 1 over the pinned scroll distance
+        const p = self.progress
 
-        /* ── Eyebrow: visible immediately, fade in 0–5% ── */
+        /* ── Eyebrow: floor matches pre-pin max, then fades fully in 0–5% ── */
         const eyebrow = section.querySelector('.vs-eyebrow')
         if (eyebrow) {
           const ep = Math.min(1, p / 0.05)
-          eyebrow.style.opacity = ep
-          eyebrow.style.transform = `translateY(${(1 - ep) * 12}px)`
+          const eyebrowFloor = mobile ? 0.20 : 0.14
+          const eyebrowVal   = Math.max(eyebrowFloor, ep)
+          eyebrow.style.opacity   = eyebrowVal
+          eyebrow.style.transform = `translateY(${(1 - eyebrowVal) * 12}px)`
         }
 
-        /* ── Words: reveal from 0%–80% (starts immediately) ── */
-        const words = section.querySelectorAll('.reveal-word')
-        const total = words.length
-        const revealEnd   = 0.80
+        /* ── Words: floor = preMax so reveal continues seamlessly ── */
+        const words     = section.querySelectorAll('.reveal-word')
+        const total     = words.length
+        const revealEnd = 0.80
+        const wordFloor = mobile ? 0.28 : 0.22
+        const maxBlur   = mobile ? 4 : 5
 
         words.forEach((word, i) => {
           const wordStart = (i / total) * revealEnd * 0.78
           const wordDur   = revealEnd * 0.22
-          const wp = (p - wordStart) / wordDur
-          const clamped = Math.min(1, Math.max(0, wp))
-          word.style.opacity = clamped
-          word.style.filter  = clamped >= 1 ? 'blur(0px)' : `blur(${(1 - clamped) * 6}px)`
+          const wp        = (p - wordStart) / wordDur
+          const clamped   = Math.min(1, Math.max(0, wp))
+          const displayed = Math.max(wordFloor, clamped)
+          word.style.opacity = displayed
+          word.style.filter  = displayed >= 1 ? 'blur(0px)' : `blur(${(1 - displayed) * maxBlur}px)`
         })
 
-        /* ── Attribution: fade in during 75%–90% ── */
+        /* ── Attribution: fade in 75%–90% ── */
         const attrib = section.querySelector('.vs-attrib')
         if (attrib) {
           const ap = Math.min(1, Math.max(0, (p - 0.75) / 0.15))
-          attrib.style.opacity = ap * 0.6
+          attrib.style.opacity   = ap * 0.6
           attrib.style.transform = `translateY(${(1 - ap) * 10}px)`
         }
       },
@@ -272,7 +300,7 @@ export default function VideoStrip() {
         .vs-eyebrow {
           font-family: var(--font-display); font-weight: 700;
           font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
-          color: var(--accent); opacity: 0;
+          color: var(--accent); opacity: 0.06;
           will-change: opacity, transform;
         }
 
@@ -291,9 +319,18 @@ export default function VideoStrip() {
         .reveal-word {
           display: inline-block;
           margin-right: 0.28em;
-          opacity: 0;
+          opacity: 0.10;
           filter: blur(8px);
           will-change: opacity, filter;
+        }
+        @media (max-width: 767px) {
+          .reveal-word {
+            opacity: 0.15;
+            filter: blur(6px);
+          }
+          .vs-eyebrow {
+            opacity: 0.08;
+          }
         }
         .reveal-word[data-accent="true"] {
           background: var(--bt-gradient);

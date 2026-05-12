@@ -471,7 +471,7 @@ export default function Hero() {
 
     if (reduced) {
       titleEl.textContent  = TITLE_TEXT
-      subEl.textContent    = TYPE_LINES.join(' — ')
+      subEl.textContent    = TYPE_LINES[0]
       eyebrowEl.style.opacity = '1'
       ctasEl.style.opacity    = '1'
       return
@@ -514,47 +514,79 @@ export default function Hero() {
     }, '-=0.2')
     tl.to(ctasEl, { opacity: 1, duration: 0.5, ease: 'power2.out' })
 
-    let cancelled = false, lineIdx = 0
-    let subAnim = null
+    let cancelled = false
+    let lineIdx = 0
+    let typingTimeout = null
 
-    const rotateSub = () => {
+    const TYPE_SPEED   = 55
+    const DELETE_SPEED = 30
+    const PAUSE_AFTER  = 1600
+    const PAUSE_BEFORE = 350
+
+    function startTyping() {
       if (cancelled) return
-      lineIdx = (lineIdx + 1) % TYPE_LINES.length
-      gsap.to(subEl, {
-        opacity: 0, y: -10, duration: 0.4, ease: 'power2.in',
-        onComplete: () => {
-          subEl.textContent = TYPE_LINES[lineIdx]
-          gsap.fromTo(subEl, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' })
-        },
-      })
-      subAnim = setTimeout(rotateSub, 3500)
+      const phrase = TYPE_LINES[lineIdx]
+      let charCount = 0
+
+      function addChar() {
+        if (cancelled) return
+        charCount++
+        subEl.textContent = phrase.slice(0, charCount)
+        if (charCount < phrase.length) {
+          typingTimeout = setTimeout(addChar, TYPE_SPEED)
+        } else {
+          typingTimeout = setTimeout(startDeleting, PAUSE_AFTER)
+        }
+      }
+
+      function startDeleting() {
+        if (cancelled) return
+        let remaining = phrase.length
+        function delChar() {
+          if (cancelled) return
+          remaining--
+          subEl.textContent = phrase.slice(0, remaining)
+          if (remaining > 0) {
+            typingTimeout = setTimeout(delChar, DELETE_SPEED)
+          } else {
+            lineIdx = (lineIdx + 1) % TYPE_LINES.length
+            typingTimeout = setTimeout(startTyping, PAUSE_BEFORE)
+          }
+        }
+        delChar()
+      }
+
+      addChar()
     }
 
     tl.add(() => {
-      subEl.textContent = TYPE_LINES[0]
+      subEl.textContent = ''
       gsap.to(subEl, { opacity: 1, duration: 0.5 })
-      subAnim = setTimeout(rotateSub, 3500)
+      typingTimeout = setTimeout(startTyping, 500)
     }, '-=0.4')
 
     return () => {
       cancelled = true; tl.kill()
-      clearTimeout(subAnim)
+      clearTimeout(typingTimeout)
     }
   }, [reduced])
 
   const handleSecondaryClick = e => {
-    if (reduced) return
-    const btn = e.currentTarget, liq = liquidRef.current
-    if (!liq) return
-    const rect = btn.getBoundingClientRect()
-    const size = Math.max(rect.width, rect.height) * 2.2
-    Object.assign(liq.style, {
-      width: `${size}px`, height: `${size}px`,
-      left: `${e.clientX - rect.left - size/2}px`,
-      top:  `${e.clientY - rect.top  - size/2}px`,
-      transform: 'scale(0)', opacity: '1',
-    })
-    requestAnimationFrame(() => { liq.style.transform = 'scale(1)'; liq.style.opacity = '0' })
+    if (!reduced) {
+      const btn = e.currentTarget, liq = liquidRef.current
+      if (liq) {
+        const rect = btn.getBoundingClientRect()
+        const size = Math.max(rect.width, rect.height) * 2.2
+        Object.assign(liq.style, {
+          width: `${size}px`, height: `${size}px`,
+          left: `${e.clientX - rect.left - size/2}px`,
+          top:  `${e.clientY - rect.top  - size/2}px`,
+          transform: 'scale(0)', opacity: '1',
+        })
+        requestAnimationFrame(() => { liq.style.transform = 'scale(1)'; liq.style.opacity = '0' })
+      }
+    }
+    document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' })
   }
 
   return (
@@ -569,7 +601,8 @@ export default function Hero() {
         <h1 ref={titleRef}  className="hero-title"  aria-label={TITLE_TEXT} />
         <p  ref={subRef}    className="hero-sub" />
         <div ref={ctasRef} className="hero-ctas">
-          <button className="hero-btn-primary" type="button">
+          <button className="hero-btn-primary" type="button"
+            onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
             <span className="hero-btn-glow" aria-hidden="true" />
             Start Building
           </button>
@@ -696,11 +729,24 @@ export default function Hero() {
           opacity: 0;
           white-space: nowrap;
         }
+        .hero-sub::after {
+          content: '|';
+          display: inline;
+          margin-left: 1px;
+          color: rgba(0, 217, 255, 0.65);
+          animation: heroCursorBlink 1s step-end infinite;
+        }
+        @keyframes heroCursorBlink {
+          50% { opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-sub::after { display: none; }
+        }
         @media (min-width: 768px) {
           .hero-sub { font-size: clamp(14px, 1.1vw, 17px); margin-bottom: 42px; }
         }
         @media (max-width: 768px) {
-          .hero-sub { white-space: normal; }
+          .hero-sub { white-space: normal; min-height: 2.2em; }
         }
 
         /* ── CTAs ── */
