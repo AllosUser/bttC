@@ -12,14 +12,12 @@ const TYPE_LINES = [
   'Designed in Cyprus. Built for tomorrow.',
 ]
 
-/* ---------- CSS gradient fallback for low-end mobile ---------- */
+/* ---------- CSS gradient fallback for low-end / reduced-motion ---------- */
 function GradientFallback() {
-  return (
-    <div className="hero-gradient-bg" aria-hidden="true" />
-  )
+  return <div className="hero-gradient-bg" aria-hidden="true" />
 }
 
-/* ---------- Particle Field ---------- */
+/* ---------- Magnetic Particle Field ---------- */
 function ParticleField({ heroRef }) {
   const canvasRef = useRef(null)
   const reduced   = useReducedMotion()
@@ -30,130 +28,407 @@ function ParticleField({ heroRef }) {
     const heroEl = heroRef.current
     if (!canvas || !heroEl) return
 
-    // Low-end device check — skip WebGL
     const lowEnd = (navigator.hardwareConcurrency ?? 4) <= 2
     if (lowEnd) return
 
-    let W = window.innerWidth
-    let H = window.innerHeight
-    canvas.width  = W
-    canvas.height = H
-
+    // ── Sizing ──────────────────────────────────────────────
+    let W = canvas.clientWidth  || window.innerWidth
+    let H = canvas.clientHeight || window.innerHeight
     const isMobile = W < 768
-    const dpr      = Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2)
+    const dpr = Math.min(window.devicePixelRatio, 1.75)
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true })
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
     renderer.setSize(W, H, false)
     renderer.setPixelRatio(dpr)
     renderer.setClearColor(0x000000, 0)
 
     const scene = new THREE.Scene()
-    const cam   = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000)
-    cam.position.z = 280
 
-    const COUNT     = isMobile ? 300 : 900
-    const MAX_LINES = isMobile ? 80  : 280
+    // Orthographic camera so world units map cleanly to pixels
+    let viewH = 720
+    let viewW = viewH * (W / H)
+    const cam = new THREE.OrthographicCamera(-viewW/2, viewW/2, viewH/2, -viewH/2, -1000, 1000)
+    cam.position.z = 10
 
-    const origPos = new Float32Array(COUNT * 3)
-    const curPos  = new Float32Array(COUNT * 3)
-    const vel     = new Float32Array(COUNT * 3)
+    // ── Particle counts ──────────────────────────────────────
+    const COUNT      = isMobile ? 380 : 1000
+    const MAX_BOLTS  = isMobile ? 5   : 12
+    const SEGS       = 14
+    const BOLT_VERTS = MAX_BOLTS * SEGS * 2
 
-    // Particles scaled down on mobile so ring fits small viewport
-    const scale = isMobile ? 0.6 : 1.0
-    for (let i = 0; i < COUNT; i++) {
-      const t = Math.random() * Math.PI * 2
-      const r = (80 + Math.random() * 100) * scale
-      const x = Math.cos(t) * r * 1.6 * scale + (Math.random() - 0.5) * 80 * scale
-      const y = Math.sin(t) * r * 0.9 * scale + (Math.random() - 0.5) * 60 * scale
-      const z = (Math.random() - 0.5) * 30
-      origPos[i * 3] = curPos[i * 3] = x
-      origPos[i * 3 + 1] = curPos[i * 3 + 1] = y
-      origPos[i * 3 + 2] = curPos[i * 3 + 2] = z
-    }
+    // ── Particle data arrays ─────────────────────────────────
+    const home     = new Float32Array(COUNT * 2)
+    const pos      = new Float32Array(COUNT * 3)
+    const vel      = new Float32Array(COUNT * 2)
+    const sizes    = new Float32Array(COUNT)
+    const aSize    = new Float32Array(COUNT)
+    const aGlow    = new Float32Array(COUNT)
+    const aOpac    = new Float32Array(COUNT)
+    const colorMix = new Float32Array(COUNT)
+    const seedN    = new Float32Array(COUNT)
 
-    const geo     = new THREE.BufferGeometry()
-    const posAttr = new THREE.BufferAttribute(curPos.slice(), 3)
-    geo.setAttribute('position', posAttr)
-
-    const mat = new THREE.PointsMaterial({ size: isMobile ? 1.0 : 1.3, color: 0x00D9FF, transparent: true, opacity: 0.65, sizeAttenuation: true })
-    const pts = new THREE.Points(geo, mat)
-    scene.add(pts)
-
-    const lineGeo    = new THREE.BufferGeometry()
-    const lineBuf    = new Float32Array(MAX_LINES * 6)
-    lineGeo.setAttribute('position', new THREE.BufferAttribute(lineBuf, 3))
-    const lineSeg    = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: 0x087BFF, transparent: true, opacity: 0.08 }))
-    scene.add(lineSeg)
-    const linePosArr = lineGeo.attributes.position.array
-
-    let mouseX = 0, mouseY = 0
-    const onMove = e => {
-      const rect = canvas.getBoundingClientRect()
-      mouseX = ((e.clientX - rect.left) / rect.width  - 0.5) * 2
-      mouseY = -((e.clientY - rect.top)  / rect.height - 0.5) * 2
-    }
-    const onLeave = () => { mouseX = 0; mouseY = 0 }
-    // Touch: no mouse interaction on mobile
-    if (!isMobile) {
-      heroEl.addEventListener('mousemove', onMove)
-      heroEl.addEventListener('mouseleave', onLeave)
-    }
-
-    const REPEL_DIST = 80 * scale, REPEL_FORCE = 4.5, SPRING = 0.04, DAMP = 0.88
-    let rafId = 0
-    const animate = () => {
-      rafId = requestAnimationFrame(animate)
-      const fovTan = Math.tan((cam.fov * Math.PI / 180) / 2)
-      const mwx = mouseX * cam.position.z * fovTan * cam.aspect
-      const mwy = mouseY * cam.position.z * fovTan
-      let lineCount = 0
-      const pArr = posAttr.array
+    function distribute() {
+      const w = viewW * 1.18, h = viewH * 1.18
       for (let i = 0; i < COUNT; i++) {
-        const ix = i * 3, iy = ix + 1, iz = ix + 2
-        const dx = pArr[ix] - mwx, dy = pArr[iy] - mwy
-        const d  = Math.sqrt(dx * dx + dy * dy)
-        if (d < REPEL_DIST && d > 0.0001) {
-          const f = (1 - d / REPEL_DIST) * REPEL_FORCE
-          vel[ix] += (dx / d) * f; vel[iy] += (dy / d) * f
+        const hx = (Math.random() - 0.5) * w
+        const hy = (Math.random() - 0.5) * h
+        home[i*2] = hx; home[i*2+1] = hy
+        pos[i*3]  = hx; pos[i*3+1]  = hy; pos[i*3+2] = 0
+        vel[i*2]  = 0;  vel[i*2+1]  = 0
+        sizes[i]  = 1.3 + Math.pow(Math.random(), 2.4) * 4.0
+        aOpac[i]  = 0.35 + Math.random() * 0.40
+        colorMix[i] = Math.random() < 0.30 ? 1 : 0
+        seedN[i]  = Math.random() * 1000
+      }
+    }
+    distribute()
+
+    // ── Particle geometry + custom shader ────────────────────
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(pos,      3))
+    geo.setAttribute('aSize',    new THREE.BufferAttribute(aSize,    1))
+    geo.setAttribute('aGlow',    new THREE.BufferAttribute(aGlow,    1))
+    geo.setAttribute('aOpac',    new THREE.BufferAttribute(aOpac,    1))
+    geo.setAttribute('aColorMix',new THREE.BufferAttribute(colorMix, 1))
+
+    // Brand colours: bt-cyan #00D9FF, bt-green #00E39A, hot bright #87FFFF
+    const ptVert = `
+      attribute float aSize;
+      attribute float aGlow;
+      attribute float aOpac;
+      attribute float aColorMix;
+      varying float vGlow;
+      varying float vOpac;
+      varying float vColorMix;
+      uniform float uPixelRatio;
+      uniform float uViewH;
+      void main(){
+        vGlow = aGlow;
+        vOpac = aOpac;
+        vColorMix = aColorMix;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = aSize * uPixelRatio * (700.0 / uViewH);
+        gl_Position = projectionMatrix * mv;
+      }
+    `
+    const ptFrag = `
+      precision mediump float;
+      uniform vec3 uCyan;
+      uniform vec3 uGreen;
+      uniform vec3 uHot;
+      varying float vGlow;
+      varying float vOpac;
+      varying float vColorMix;
+      void main(){
+        vec2 c = gl_PointCoord - vec2(0.5);
+        float d = length(c) * 2.0;
+        if(d > 1.0) discard;
+        float disc = smoothstep(1.0, 0.65, d);
+        float halo = smoothstep(1.0, 0.0, d) * (0.3 + vGlow * 1.4);
+        vec3 col = mix(uCyan, uGreen, vColorMix);
+        col = mix(col, uHot, vGlow * 0.7);
+        float a = (disc + halo * 0.55) * vOpac * (0.85 + vGlow * 0.55);
+        gl_FragColor = vec4(col, a);
+      }
+    `
+    const ptMat = new THREE.ShaderMaterial({
+      vertexShader: ptVert,
+      fragmentShader: ptFrag,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: {
+        uCyan:       { value: new THREE.Color(0x00D9FF) },
+        uGreen:      { value: new THREE.Color(0x00E39A) },
+        uHot:        { value: new THREE.Color(0x87FFFF) },
+        uPixelRatio: { value: dpr },
+        uViewH:      { value: viewH },
+      },
+    })
+    const points = new THREE.Points(geo, ptMat)
+    scene.add(points)
+
+    // ── Electric bolt arcs ───────────────────────────────────
+    const boltPos   = new Float32Array(BOLT_VERTS * 3)
+    const boltAlpha = new Float32Array(BOLT_VERTS)
+    const boltGeo   = new THREE.BufferGeometry()
+    boltGeo.setAttribute('position', new THREE.BufferAttribute(boltPos,   3))
+    boltGeo.setAttribute('aAlpha',   new THREE.BufferAttribute(boltAlpha, 1))
+    const boltMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        attribute float aAlpha;
+        varying float vAlpha;
+        void main(){
+          vAlpha = aAlpha;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
-        vel[ix] += (origPos[ix] - pArr[ix]) * SPRING
-        vel[iy] += (origPos[iy] - pArr[iy]) * SPRING
-        vel[iz] += (origPos[iz] - pArr[iz]) * SPRING
-        vel[ix] *= DAMP; vel[iy] *= DAMP; vel[iz] *= DAMP
-        pArr[ix] += vel[ix]; pArr[iy] += vel[iy]; pArr[iz] += vel[iz]
-        if (lineCount < MAX_LINES) {
-          for (let j = i + 1; j < COUNT && lineCount < MAX_LINES; j++) {
-            const jx = j * 3
-            const ddx = pArr[ix] - pArr[jx], ddy = pArr[iy] - pArr[jx + 1]
-            if (Math.abs(ddx) < 35 && Math.abs(ddy) < 35 && Math.sqrt(ddx*ddx+ddy*ddy) < 42) {
-              const b = lineCount * 6
-              linePosArr[b]=pArr[ix]; linePosArr[b+1]=pArr[iy]; linePosArr[b+2]=pArr[iz]
-              linePosArr[b+3]=pArr[jx]; linePosArr[b+4]=pArr[jx+1]; linePosArr[b+5]=pArr[jx+2]
-              lineCount++
+      `,
+      fragmentShader: `
+        precision mediump float;
+        varying float vAlpha;
+        uniform vec3 uColor;
+        void main(){
+          gl_FragColor = vec4(uColor, vAlpha);
+        }
+      `,
+      uniforms: { uColor: { value: new THREE.Color(0x00EEFF) } },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+    const boltLines = new THREE.LineSegments(boltGeo, boltMat)
+    scene.add(boltLines)
+
+    // ── Pointer halo glow ────────────────────────────────────
+    const haloArr = new Float32Array([0, 0, 0])
+    const haloGeo = new THREE.BufferGeometry()
+    haloGeo.setAttribute('position', new THREE.BufferAttribute(haloArr, 3))
+    const haloMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        uniform float uSize;
+        uniform float uPixelRatio;
+        uniform float uViewH;
+        void main(){
+          gl_PointSize = uSize * uPixelRatio * (700.0 / uViewH);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        precision mediump float;
+        uniform vec3 uColor;
+        uniform float uActive;
+        void main(){
+          vec2 c = gl_PointCoord - vec2(0.5);
+          float d = length(c) * 2.0;
+          if(d > 1.0) discard;
+          float core = smoothstep(0.18, 0.0, d);
+          float ring = smoothstep(1.0, 0.0, d) * 0.65;
+          gl_FragColor = vec4(uColor, (core + ring * 0.55) * uActive);
+        }
+      `,
+      uniforms: {
+        uColor:      { value: new THREE.Color(0x00D9FF) },
+        uSize:       { value: 90 },
+        uActive:     { value: 0 },
+        uPixelRatio: { value: dpr },
+        uViewH:      { value: viewH },
+      },
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+    const haloPoint = new THREE.Points(haloGeo, haloMat)
+    scene.add(haloPoint)
+
+    // ── Pointer state ────────────────────────────────────────
+    const ptr = { x: 0, y: 0, tx: 0, ty: 0, active: 0, tActive: 0 }
+
+    function setPointerFromEvent(cx, cy) {
+      const rect = canvas.getBoundingClientRect()
+      const nx = (cx - rect.left) / rect.width
+      const ny = (cy - rect.top)  / rect.height
+      ptr.tx = (nx - 0.5) * viewW
+      ptr.ty = (0.5 - ny) * viewH
+    }
+
+    const onMouseMove  = e => { setPointerFromEvent(e.clientX, e.clientY); ptr.tActive = 1 }
+    const onMouseLeave = () => { ptr.tActive = 0 }
+    const onTouchStart = e => {
+      const t = e.touches[0]; if (!t) return
+      setPointerFromEvent(t.clientX, t.clientY)
+      ptr.x = ptr.tx; ptr.y = ptr.ty
+      ptr.tActive = 1
+    }
+    const onTouchMove = e => {
+      const t = e.touches[0]; if (!t) return
+      setPointerFromEvent(t.clientX, t.clientY)
+    }
+    const onTouchEnd = () => { ptr.tActive = 0 }
+
+    heroEl.addEventListener('mousemove',   onMouseMove)
+    heroEl.addEventListener('mouseleave',  onMouseLeave)
+    heroEl.addEventListener('touchstart',  onTouchStart,  { passive: true })
+    heroEl.addEventListener('touchmove',   onTouchMove,   { passive: true })
+    heroEl.addEventListener('touchend',    onTouchEnd,    { passive: true })
+    heroEl.addEventListener('touchcancel', onTouchEnd,    { passive: true })
+
+    // ── Bolt helpers ─────────────────────────────────────────
+    function jaggedBolt(bIdx, x1, y1, x2, y2, intensity) {
+      const dx = x2 - x1, dy = y2 - y1
+      const len = Math.sqrt(dx*dx + dy*dy)
+      if (len < 1) { clearBolt(bIdx); return }
+      const nx = -dy / len, ny = dx / len
+      const pts = new Array(SEGS + 1)
+      pts[0] = [x1, y1]; pts[SEGS] = [x2, y2]
+      const maxJitter = Math.min(len * 0.20, 26)
+      for (let i = 1; i < SEGS; i++) {
+        const t = i / SEGS
+        const taper = Math.sin(t * Math.PI)
+        const j = (Math.random() - 0.5) * 2 * maxJitter * taper
+        pts[i] = [x1 + dx * t + nx * j, y1 + dy * t + ny * j]
+      }
+      for (let s = 0; s < SEGS; s++) {
+        const base  = (bIdx * SEGS + s) * 6
+        const aBase = (bIdx * SEGS + s) * 2
+        const p1 = pts[s], p2 = pts[s+1]
+        boltPos[base]   = p1[0]; boltPos[base+1] = p1[1]; boltPos[base+2] = 0
+        boltPos[base+3] = p2[0]; boltPos[base+4] = p2[1]; boltPos[base+5] = 0
+        const alpha = intensity * (1 - s / SEGS) * 0.95 + intensity * 0.20
+        boltAlpha[aBase] = boltAlpha[aBase+1] = alpha
+      }
+    }
+    function clearBolt(bIdx) {
+      for (let s = 0; s < SEGS; s++) {
+        const aBase = (bIdx * SEGS + s) * 2
+        boltAlpha[aBase] = boltAlpha[aBase+1] = 0
+      }
+    }
+
+    // ── Physics constants ────────────────────────────────────
+    const ATTRACT_R  = 230
+    const ORBIT_R    = 55
+    const PULL       = 4.4
+    const SPRING     = 0.012
+    const DAMP       = 0.86
+    const BOLT_RANGE = 250
+
+    const cand     = new Int32Array(96)
+    const candDist = new Float32Array(96)
+
+    const posAttr  = geo.getAttribute('position')
+    const sizeAttr = geo.getAttribute('aSize')
+    const glowAttr = geo.getAttribute('aGlow')
+
+    let last = performance.now()
+    let timeAccum = 0
+    let rafId = 0
+
+    function animate(now) {
+      rafId = requestAnimationFrame(animate)
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+      timeAccum += dt
+
+      // Smooth pointer tracking
+      ptr.x      += (ptr.tx - ptr.x)           * 0.18
+      ptr.y      += (ptr.ty - ptr.y)           * 0.18
+      ptr.active += (ptr.tActive - ptr.active) * 0.12
+
+      haloArr[0] = ptr.x; haloArr[1] = ptr.y
+      haloPoint.geometry.attributes.position.needsUpdate = true
+      haloMat.uniforms.uActive.value = ptr.active
+      haloMat.uniforms.uSize.value   = 70 + Math.sin(timeAccum * 7) * 8 + ptr.active * 28
+
+      const arr  = posAttr.array
+      const sArr = sizeAttr.array
+      const gArr = glowAttr.array
+
+      const wantBolts = ptr.active > 0.2
+      let candN = 0
+
+      for (let i = 0; i < COUNT; i++) {
+        const ix = i*3, iy = i*3+1
+        const hx = home[i*2], hy = home[i*2+1]
+
+        // Gentle noise drift toward home
+        const tt = timeAccum * 0.3 + seedN[i]
+        const dxn = Math.cos(tt) * 4         + Math.cos(tt * 1.7 + i) * 1.5
+        const dyn = Math.sin(tt * 0.9) * 4   + Math.sin(tt * 1.3 + i * 0.5) * 1.5
+
+        vel[i*2]   += (hx + dxn - arr[ix]) * SPRING
+        vel[i*2+1] += (hy + dyn - arr[iy]) * SPRING
+
+        let glow = 0, bonus = 0
+
+        if (ptr.active > 0.01) {
+          const dx = ptr.x - arr[ix]
+          const dy = ptr.y - arr[iy]
+          const d  = Math.sqrt(dx*dx + dy*dy) + 0.001
+          if (d < ATTRACT_R) {
+            const f = 1 - d / ATTRACT_R
+            const k = f * f * ptr.active
+            // Radial pull + tangential swirl for liquid feel
+            let pullX = (dx / d) * PULL * k + (-dy / d) * PULL * k * 0.6
+            let pullY = (dy / d) * PULL * k + ( dx / d) * PULL * k * 0.6
+            // Soft orbit repulsion so particles don't pile at cursor
+            if (d < ORBIT_R) {
+              const e = (ORBIT_R - d) / ORBIT_R
+              pullX -= (dx / d) * 1.5 * e
+              pullY -= (dy / d) * 1.5 * e
+            }
+            vel[i*2]   += pullX
+            vel[i*2+1] += pullY
+            glow  = k
+            bonus = k * 1.8
+            if (wantBolts && d < BOLT_RANGE && candN < cand.length) {
+              cand[candN] = i; candDist[candN] = d; candN++
             }
           }
         }
+
+        vel[i*2]   *= DAMP; vel[i*2+1] *= DAMP
+        arr[ix]  += vel[i*2]; arr[iy]  += vel[i*2+1]
+
+        sArr[i] = sizes[i] * (1 + bonus * 0.7)
+        gArr[i] = glow
       }
-      posAttr.needsUpdate = true
-      lineGeo.attributes.position.needsUpdate = true
-      lineGeo.setDrawRange(0, lineCount * 2)
-      pts.rotation.y += 0.0003
+
+      posAttr.needsUpdate  = true
+      sizeAttr.needsUpdate = true
+      glowAttr.needsUpdate = true
+
+      // Electric arcs to the closest particles
+      if (wantBolts && candN > 0) {
+        const sorted = Array.from({ length: candN }, (_, k) => k)
+          .sort((a, b) => candDist[a] - candDist[b])
+        const N = Math.min(MAX_BOLTS, sorted.length)
+        for (let b = 0; b < MAX_BOLTS; b++) {
+          if (b < N) {
+            const pi = cand[sorted[b]]
+            const intensity = (1 - candDist[sorted[b]] / BOLT_RANGE) * ptr.active
+            jaggedBolt(b, ptr.x, ptr.y, arr[pi*3], arr[pi*3+1], intensity * 0.9)
+          } else {
+            clearBolt(b)
+          }
+        }
+      } else {
+        for (let b = 0; b < MAX_BOLTS; b++) clearBolt(b)
+      }
+      boltGeo.attributes.position.needsUpdate = true
+      boltGeo.attributes.aAlpha.needsUpdate   = true
+
       renderer.render(scene, cam)
     }
     rafId = requestAnimationFrame(animate)
 
-    const onResize = () => {
-      W = window.innerWidth; H = window.innerHeight
-      cam.aspect = W / H; cam.updateProjectionMatrix()
+    // ── Resize ───────────────────────────────────────────────
+    function onResize() {
+      W = canvas.clientWidth  || window.innerWidth
+      H = canvas.clientHeight || window.innerHeight
+      viewW = viewH * (W / H)
+      cam.left = -viewW/2; cam.right  =  viewW/2
+      cam.top  =  viewH/2; cam.bottom = -viewH/2
+      cam.updateProjectionMatrix()
       renderer.setSize(W, H, false)
+      distribute()
+      posAttr.needsUpdate = true
     }
     window.addEventListener('resize', onResize)
 
+    // ── Cleanup ──────────────────────────────────────────────
     return () => {
       cancelAnimationFrame(rafId)
       window.removeEventListener('resize', onResize)
-      if (!isMobile) { heroEl.removeEventListener('mousemove', onMove); heroEl.removeEventListener('mouseleave', onLeave) }
-      geo.dispose(); mat.dispose(); lineGeo.dispose(); lineSeg.material.dispose(); renderer.dispose()
+      heroEl.removeEventListener('mousemove',   onMouseMove)
+      heroEl.removeEventListener('mouseleave',  onMouseLeave)
+      heroEl.removeEventListener('touchstart',  onTouchStart)
+      heroEl.removeEventListener('touchmove',   onTouchMove)
+      heroEl.removeEventListener('touchend',    onTouchEnd)
+      heroEl.removeEventListener('touchcancel', onTouchEnd)
+      geo.dispose(); ptMat.dispose()
+      boltGeo.dispose(); boltMat.dispose()
+      haloGeo.dispose(); haloMat.dispose()
+      renderer.dispose()
     }
   }, [reduced, heroRef])
 
@@ -196,7 +471,6 @@ export default function Hero() {
     }
 
     const mobile = window.innerWidth < 768
-    // Max offsets scaled down on mobile
     const maxX = mobile ? 150 : 400
     const maxY = mobile ? 100 : 300
     const charDelay = mobile ? 0.025 : 0.04
@@ -239,19 +513,12 @@ export default function Hero() {
     const rotateSub = () => {
       if (cancelled) return
       lineIdx = (lineIdx + 1) % TYPE_LINES.length
-      
       gsap.to(subEl, {
-        opacity: 0,
-        y: -10,
-        duration: 0.4,
-        ease: 'power2.in',
+        opacity: 0, y: -10, duration: 0.4, ease: 'power2.in',
         onComplete: () => {
           subEl.textContent = TYPE_LINES[lineIdx]
-          gsap.fromTo(subEl, 
-            { opacity: 0, y: 10 },
-            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-          )
-        }
+          gsap.fromTo(subEl, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' })
+        },
       })
       subAnim = setTimeout(rotateSub, 3500)
     }
@@ -274,14 +541,21 @@ export default function Hero() {
     if (!liq) return
     const rect = btn.getBoundingClientRect()
     const size = Math.max(rect.width, rect.height) * 2.2
-    Object.assign(liq.style, { width:`${size}px`, height:`${size}px`, left:`${e.clientX-rect.left-size/2}px`, top:`${e.clientY-rect.top-size/2}px`, transform:'scale(0)', opacity:'1' })
-    requestAnimationFrame(() => { liq.style.transform='scale(1)'; liq.style.opacity='0' })
+    Object.assign(liq.style, {
+      width: `${size}px`, height: `${size}px`,
+      left: `${e.clientX - rect.left - size/2}px`,
+      top:  `${e.clientY - rect.top  - size/2}px`,
+      transform: 'scale(0)', opacity: '1',
+    })
+    requestAnimationFrame(() => { liq.style.transform = 'scale(1)'; liq.style.opacity = '0' })
   }
 
   return (
     <section id="top" ref={heroRef} className="hero">
-      {/* Low-end mobile: CSS gradient instead of Three.js */}
-      {isLowEnd ? <GradientFallback /> : <ParticleField heroRef={heroRef} />}
+      {isLowEnd || reduced
+        ? <GradientFallback />
+        : <ParticleField heroRef={heroRef} />
+      }
 
       <div className="hero-content">
         <p ref={eyebrowRef} className="hero-eyebrow">CYPRUS · DIGITAL EXCELLENCE</p>
@@ -298,8 +572,6 @@ export default function Hero() {
           </button>
         </div>
       </div>
-
-
 
       <style>{`
         .hero {
@@ -318,8 +590,9 @@ export default function Hero() {
           inset: 0;
           width: 100% !important;
           height: 100% !important;
+          pointer-events: none;
         }
-        /* Low-end fallback gradient */
+        /* Low-end / reduced-motion fallback */
         .hero-gradient-bg {
           position: absolute;
           inset: 0;
@@ -340,9 +613,9 @@ export default function Hero() {
           justify-content: center;
         }
         @media (min-width: 768px) {
-          .hero-content { 
-            max-width: 1200px; 
-            padding: 50px 2rem 0; 
+          .hero-content {
+            max-width: 1200px;
+            padding: 50px 2rem 0;
           }
         }
 
@@ -362,22 +635,22 @@ export default function Hero() {
           margin-bottom: 32px;
         }
         @media (min-width: 768px) {
-          .hero-eyebrow { 
-            font-size: 12px; 
-            letter-spacing: 0.32em; 
-            gap: 16px; 
-            margin-bottom: clamp(1.8rem, 3.5vw, 2.8rem); 
+          .hero-eyebrow {
+            font-size: 12px;
+            letter-spacing: 0.32em;
+            gap: 16px;
+            margin-bottom: clamp(1.8rem, 3.5vw, 2.8rem);
           }
         }
         .hero-eyebrow::before, .hero-eyebrow::after {
           content: ''; display: block; width: 24px; height: 1px;
-          background: var(--bt-gradient-soft); flex-shrink: 0;
-          opacity: 0.55;
+          background: var(--bt-gradient-soft); flex-shrink: 0; opacity: 0.55;
         }
         @media (min-width: 768px) {
           .hero-eyebrow::before, .hero-eyebrow::after { width: clamp(32px, 4vw, 56px); }
         }
 
+        /* ── Title ── */
         .hero-title {
           font-family: 'Syne', sans-serif;
           font-size: clamp(3rem, 11vw, 4.2rem);
@@ -394,9 +667,11 @@ export default function Hero() {
         @media (min-width: 768px) {
           .hero-title { font-size: clamp(4.4rem, 8.8vw, 8.6rem); margin-bottom: 28px; }
         }
-        .hero-word { display: block; white-space: nowrap; }
+        .hero-word  { display: block; white-space: nowrap; }
         .hero-char  { display: inline-block; opacity: 0; will-change: transform, opacity; }
         .hero-space { display: none; }
+
+        /* ── Subtitle ── */
         .hero-sub {
           font-size: 0.85rem;
           color: rgba(244, 247, 251, 0.68);
@@ -446,6 +721,7 @@ export default function Hero() {
           transition: filter 0.3s;
           width: 100%;
           min-height: 52px;
+          cursor: pointer;
         }
         @media (min-width: 600px) {
           .hero-btn-primary { width: auto; }
@@ -463,7 +739,7 @@ export default function Hero() {
           pointer-events: none;
         }
         @keyframes heroBtnPulse {
-          0%,100% { inset: -6px; border-color: rgba(0,217,255,0); }
+          0%,100% { inset: -6px;  border-color: rgba(0,217,255,0);    }
           50%     { inset: -12px; border-color: rgba(0,217,255,0.32); }
         }
 
@@ -484,6 +760,7 @@ export default function Hero() {
           transition: border-color 0.3s, color 0.3s;
           width: 100%;
           min-height: 52px;
+          cursor: pointer;
         }
         @media (min-width: 600px) {
           .hero-btn-secondary { width: auto; }
@@ -495,8 +772,6 @@ export default function Hero() {
           transform: scale(0); transition: transform 0.7s ease, opacity 0.7s ease;
           pointer-events: none;
         }
-
-
       `}</style>
     </section>
   )
