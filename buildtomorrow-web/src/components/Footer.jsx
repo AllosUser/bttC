@@ -100,9 +100,10 @@ export default function Footer() {
 
       {/* ── Nav row ── */}
       <nav className="ft-nav" aria-label="Footer navigation">
-        {NAV.map(label => (
-          <a key={label} href={`#${label.toLowerCase()}`} className="ft-nav__link">{label}</a>
-        ))}
+        {NAV.flatMap((label, i) => [
+          <a key={label} href={`#${label.toLowerCase()}`} className="ft-nav__link">{label}</a>,
+          i < NAV.length - 1 ? <span key={`s${i}`} className="ft-nav__sep" aria-hidden="true" /> : null,
+        ]).filter(Boolean)}
       </nav>
 
       <div className="ft-hr" />
@@ -166,18 +167,41 @@ export default function Footer() {
 
         /* ── Nav row ── */
         .ft-nav {
-          display:flex; flex-wrap:wrap; gap:1rem 1.5rem;
-          padding: 1.5rem 1.25rem;
-          max-width:1600px; margin:0 auto; box-sizing:border-box;
+          display: flex;
+          flex-wrap: nowrap;
+          justify-content: center;
+          align-items: center;
+          gap: clamp(7px, 2vw, 12px);
+          padding: 0.75rem 1.25rem;
+          width: 100%; max-width: 1600px; margin: 0 auto; box-sizing: border-box;
         }
-        @media (min-width:768px) { .ft-nav { gap:2.5rem; padding:2rem 5vw; } }
+        @media (min-width: 768px) {
+          .ft-nav { gap: 2.5rem; padding: 2rem 5vw; }
+        }
         .ft-nav__link {
-          font-family:'Syne',sans-serif; font-weight:700;
-          font-size:0.68rem; letter-spacing:0.22em; text-transform:uppercase;
-          color:var(--muted); transition:color .3s;
-          min-height:44px; display:inline-flex; align-items:center;
+          flex: 0 0 auto;
+          white-space: nowrap;
+          font-family: 'Syne', sans-serif; font-weight: 700;
+          font-size: clamp(9px, 2.3vw, 11px);
+          letter-spacing: 0.13em;
+          text-transform: uppercase;
+          color: rgba(244, 247, 251, 0.68); transition: color .3s;
+          min-height: 44px; display: inline-flex; align-items: center;
         }
-        .ft-nav__link:hover { color:var(--white); }
+        @media (min-width: 768px) {
+          .ft-nav__link { font-size: 0.68rem; letter-spacing: 0.22em; color: var(--muted); }
+        }
+        .ft-nav__link:hover { color: var(--bt-cyan); }
+        @media (min-width: 768px) {
+          .ft-nav__link:hover { color: var(--white); }
+        }
+        /* Gradient dot separators — mobile only */
+        .ft-nav__sep {
+          width: 3px; height: 3px; border-radius: 50%;
+          background: linear-gradient(90deg, #00E39A, #00D9FF, #087BFF);
+          opacity: 0.8; flex: 0 0 auto;
+        }
+        @media (min-width: 768px) { .ft-nav__sep { display: none; } }
 
         /* ── Giant text ── */
         .ft-giant {

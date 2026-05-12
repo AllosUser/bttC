@@ -116,7 +116,7 @@ export default function Nav() {
         <div className="bt-nav__inner">
           <a href="#top" className="bt-logo" aria-label="BuildTomorrow Home">
             <picture>
-              <source media="(max-width: 480px)" srcSet={logoIcon} />
+              <source media="(max-width: 1023px)" srcSet={logoIcon} />
               <img src={logoFull} alt="BuildTomorrow Logo" className="bt-logo-img" />
             </picture>
           </a>
