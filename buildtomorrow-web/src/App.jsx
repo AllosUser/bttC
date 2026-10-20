@@ -10,6 +10,7 @@ const Marquee    = lazy(() => import('./components/Marquee'))
 const Services   = lazy(() => import('./components/Services'))
 const About      = lazy(() => import('./components/About'))
 const Process    = lazy(() => import('./components/Process'))
+const Work       = lazy(() => import('./components/Work'))
 const VideoStrip = lazy(() => import('./components/VideoStrip'))
 const BrandMarquee = lazy(() => import('./components/BrandMarquee'))
 
@@ -35,6 +36,7 @@ export default function App() {
             <Services />
             <About />
             <Process />
+            <Work />
             <VideoStrip />
             <BrandMarquee />
 
