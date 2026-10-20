@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { createContactPayload, submitContactForm } from './contactForm.js'
+import { createContactPayload, formatCcEmails, submitContactForm } from './contactForm.js'
 
 test('createContactPayload includes Web3Forms required fields', () => {
   const payload = createContactPayload({
@@ -89,4 +89,20 @@ test('submitContactForm skips the request when honeypot is filled', async () => 
 
   assert.equal(called, false)
   assert.deepEqual(result, { success: false, skipped: true })
+})
+
+test('formatCcEmails joins addresses with semicolons and drops blanks', () => {
+  assert.equal(formatCcEmails(' hello@buildtomorrow.today, giorgos@buildtomorrow.today ;'), 'hello@buildtomorrow.today;giorgos@buildtomorrow.today')
+  assert.equal(formatCcEmails(['a@example.com', ' ', 'b@example.com']), 'a@example.com;b@example.com')
+  assert.equal(formatCcEmails(''), '')
+})
+
+test('createContactPayload adds ccemail only when CC recipients are set', () => {
+  const base = { accessKey: 'test-key', name: 'Ada', email: 'ada@example.com', message: 'Hi' }
+
+  assert.equal('ccemail' in createContactPayload(base), false)
+  assert.equal(
+    createContactPayload({ ...base, ccEmails: 'hello@buildtomorrow.today,giorgos@buildtomorrow.today' }).ccemail,
+    'hello@buildtomorrow.today;giorgos@buildtomorrow.today',
+  )
 })

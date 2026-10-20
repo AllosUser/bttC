@@ -32,6 +32,7 @@ export default function CTA() {
   const [focused, setFocused]     = useState('')
   const reduced = useReducedMotion()
   const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || import.meta.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY
+  const ccEmails  = import.meta.env.VITE_WEB3FORMS_CC_EMAILS || ''
 
   /*
    * ── MOBILE: hide elements BEFORE first paint ─────────────────────────────
@@ -165,6 +166,7 @@ export default function CTA() {
         email,
         message,
         botcheck,
+        ccEmails,
       })
 
       if (result.skipped) return
