@@ -2,8 +2,14 @@ const WEB3FORMS_ENDPOINT = 'https://api.web3forms.com/submit'
 const SUBJECT = 'New message from BuildTomorrow website'
 const FROM_NAME = 'BuildTomorrow Website'
 
-export function createContactPayload({ accessKey, name, email, message, botcheck = '' }) {
-  return {
+// Web3Forms expects extra CC recipients as one semicolon-separated string.
+export function formatCcEmails(ccEmails = '') {
+  const list = Array.isArray(ccEmails) ? ccEmails : String(ccEmails).split(/[;,]/)
+  return list.map((address) => address.trim()).filter(Boolean).join(';')
+}
+
+export function createContactPayload({ accessKey, name, email, message, botcheck = '', ccEmails = '' }) {
+  const payload = {
     access_key: accessKey,
     name,
     email,
@@ -12,6 +18,11 @@ export function createContactPayload({ accessKey, name, email, message, botcheck
     from_name: FROM_NAME,
     botcheck,
   }
+
+  const ccemail = formatCcEmails(ccEmails)
+  if (ccemail) payload.ccemail = ccemail
+
+  return payload
 }
 
 export async function submitContactForm({
@@ -20,6 +31,7 @@ export async function submitContactForm({
   email,
   message,
   botcheck = '',
+  ccEmails = '',
   fetchImpl = fetch,
 }) {
   if (botcheck) {
@@ -36,7 +48,7 @@ export async function submitContactForm({
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
-    body: JSON.stringify(createContactPayload({ accessKey, name, email, message, botcheck })),
+    body: JSON.stringify(createContactPayload({ accessKey, name, email, message, botcheck, ccEmails })),
   })
 
   const result = await response.json().catch(() => ({}))
