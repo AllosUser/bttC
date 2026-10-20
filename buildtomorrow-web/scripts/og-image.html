@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+  Source for public/og-image.png (1200x630 social share image).
+  To regenerate, screenshot this page at 1200x630, e.g. with Playwright:
+    npx playwright screenshot --viewport-size=1200,630 scripts/og-image.html public/og-image.png
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400&display=block" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #050713;
+    color: #F4F7FB;
+    font-family: 'DM Sans', sans-serif;
+    position: relative;
+  }
+  .glow {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(600px 420px at 88% 18%, rgba(0, 217, 255, 0.20), transparent 70%),
+      radial-gradient(520px 380px at 72% 105%, rgba(8, 123, 255, 0.22), transparent 70%),
+      radial-gradient(420px 320px at 0% 0%, rgba(0, 227, 154, 0.10), transparent 70%);
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 217, 255, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 217, 255, 0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at 80% 40%, #000 0%, transparent 70%);
+  }
+  .mark {
+    position: absolute; right: -40px; top: 50%;
+    width: 520px; transform: translateY(-50%);
+    opacity: 0.9;
+    filter: drop-shadow(0 0 60px rgba(0, 217, 255, 0.25));
+  }
+  .content {
+    position: absolute; left: 80px; top: 72px; bottom: 72px; width: 700px;
+    display: flex; flex-direction: column;
+  }
+  .logo { width: 260px; margin-left: -18px; }
+  .eyebrow {
+    margin-top: 44px;
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 20px; letter-spacing: 0.28em; color: #00D9FF;
+  }
+  h1 {
+    margin-top: 18px;
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: 76px; line-height: 1.02; letter-spacing: -0.02em;
+  }
+  h1 span {
+    background: linear-gradient(90deg, #00E39A 0%, #00D9FF 45%, #087BFF 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .footer {
+    margin-top: auto;
+    display: flex; align-items: center; gap: 18px;
+    font-size: 22px; color: rgba(244, 247, 251, 0.68);
+  }
+  .bar { width: 48px; height: 3px; background: linear-gradient(90deg, #00E39A, #087BFF); }
+  .footer b { color: #F4F7FB; font-weight: 400; }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="grid"></div>
+  <img class="mark" src="../Assets/bt_Logo_noText.png" alt="" />
+  <div class="content">
+    <img class="logo" src="../Assets/bt_logo_text.png" alt="BuildTomorrow" />
+    <p class="eyebrow">CYPRUS · DIGITAL EXCELLENCE</p>
+    <h1>We Build<br /><span>Digital Futures</span></h1>
+    <div class="footer"><div class="bar"></div><span><b>buildtomorrow.today</b> &nbsp;·&nbsp; Web · Mobile · AI · Security</span></div>
+  </div>
+</body>
+</html>
