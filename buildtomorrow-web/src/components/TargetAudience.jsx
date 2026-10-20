@@ -1,17 +1,30 @@
-import React from 'react'
+import { useRef } from 'react'
+import { useGSAP } from '../hooks/useGSAP'
 
 export default function TargetAudience() {
+  const sectionRef = useRef(null)
+
+  useGSAP(({ gsap }) => {
+    const section = sectionRef.current
+    if (!section) return
+    gsap.fromTo(gsap.utils.toArray('.target-reveal', section),
+      { y:40, opacity:0 },
+      { y:0, opacity:1, duration:0.8, ease:'expo.out', stagger:0.1, scrollTrigger:{ trigger:section, start:'top 78%', once:true } },
+    )
+  }, [], sectionRef)
+
   return (
-    <section className="target-audience" aria-label="Who we work with">
+    <section ref={sectionRef} className="target-audience" aria-label="Who we work with">
       <div className="target-audience__inner">
         <div className="target-left">
-          <h2 className="target-title">Built for teams that operate at scale.</h2>
+          <span className="section-label target-reveal">Who We Work With</span>
+          <h2 className="target-title target-reveal">Built for teams that operate at scale.</h2>
         </div>
         <div className="target-right">
-          <p className="target-desc">
+          <p className="target-desc target-reveal">
             We work with startups, scale-ups, and established companies building products where performance, security, and reliability are critical.
           </p>
-          <ul className="target-list">
+          <ul className="target-list target-reveal">
             <li><span aria-hidden="true" />High-growth startups</li>
             <li><span aria-hidden="true" />Regulated industries</li>
             <li><span aria-hidden="true" />Enterprise systems</li>
@@ -40,7 +53,14 @@ export default function TargetAudience() {
           grid-template-columns: 1fr;
           gap: 2.5rem;
         }
+        .target-left {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
         .target-title {
+          font-family: var(--font-display);
+          font-weight: 800;
           font-size: clamp(2.5rem, 5vw, 4.5rem);
           line-height: 1.1;
           letter-spacing: -0.02em;

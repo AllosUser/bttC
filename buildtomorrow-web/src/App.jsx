@@ -8,8 +8,10 @@ import Hero from './components/Hero'
 // Below-the-fold: code-split for faster initial paint
 const Marquee    = lazy(() => import('./components/Marquee'))
 const Services   = lazy(() => import('./components/Services'))
+const TargetAudience = lazy(() => import('./components/TargetAudience'))
 const About      = lazy(() => import('./components/About'))
 const Process    = lazy(() => import('./components/Process'))
+const StatsBand  = lazy(() => import('./components/StatsBand'))
 const VideoStrip = lazy(() => import('./components/VideoStrip'))
 const BrandMarquee = lazy(() => import('./components/BrandMarquee'))
 
@@ -33,8 +35,10 @@ export default function App() {
           <Suspense fallback={<SectionFallback />}>
             <Marquee />
             <Services />
+            <TargetAudience />
             <About />
             <Process />
+            <StatsBand />
             <VideoStrip />
             <BrandMarquee />
 
